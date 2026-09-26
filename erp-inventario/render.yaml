@@ -1,0 +1,18 @@
+# Despliegue en Render (Blueprint): crea el servicio web con su configuración.
+services:
+  - type: web
+    name: erp-inventario
+    runtime: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false          # Render la pedirá: pegue la cadena de conexión de Neon
+      - key: JWT_SECRET
+        generateValue: true  # Render genera una clave segura
+      - key: JWT_EXPIRES_IN
+        value: 8h

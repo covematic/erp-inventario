@@ -1,0 +1,14 @@
+const router = require('express').Router();
+const c = require('../controllers/entradaController');
+const { authorize } = require('../middleware/roles');
+const { validate } = require('../middleware/validate');
+const v = require('../validators');
+const { h, validarIds } = require('./_helpers');
+
+validarIds(router);
+router.get('/', h(c.listar));
+router.get('/:id', h(c.obtener));
+router.post('/', authorize('ALMACEN'), validate(v.entrada), h(c.crear));
+router.post('/:id/anular', authorize('SUPERVISOR'), validate(v.motivoAnulacion), h(c.anular));
+
+module.exports = router;
