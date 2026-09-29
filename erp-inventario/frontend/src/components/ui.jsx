@@ -40,7 +40,7 @@ export function PageHeader({ title, subtitle, actions }) {
         <h1 className="text-xl font-semibold text-slate-900 sm:text-2xl">{title}</h1>
         {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
       </div>
-      {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
+      {actions && <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap [&>*]:py-2.5 sm:[&>*]:py-2">{actions}</div>}
     </div>
   );
 }
@@ -174,8 +174,8 @@ export function StatCard({ label, value, icon: Icon, tone = 'blue', hint, onClic
 /** Contenedor de tabla con scroll horizontal en pantallas pequeñas. */
 export function TableCard({ children, toolbar, footer }) {
   return (
-    <div className="card overflow-hidden">
-      {toolbar && <div className="flex flex-col gap-3 border-b border-slate-200 p-3 lg:flex-row lg:items-center">{toolbar}</div>}
+    <div className="overflow-hidden max-md:bg-transparent md:card">
+      {toolbar && <div className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 max-md:mb-1 md:rounded-none md:border-0 md:border-b lg:flex-row lg:items-center">{toolbar}</div>}
       <div className="overflow-x-auto">{children}</div>
       {footer}
     </div>

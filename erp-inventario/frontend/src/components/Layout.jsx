@@ -6,6 +6,9 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
+import InstallApp from './InstallApp';
+import BottomNav from './BottomNav';
+import useResponsiveTables from '../hooks/useResponsiveTables';
 import { ROLES } from '../utils/format';
 
 const NAV = [
@@ -36,6 +39,7 @@ export default function Layout() {
   const [alertCount, setAlertCount] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
+  useResponsiveTables();
 
   useEffect(() => {
     setOpen(false);
@@ -79,6 +83,7 @@ export default function Layout() {
           )
         )}
       </nav>
+      <InstallApp />
       <div className="border-t border-slate-800 p-3">
         <div className="flex items-center gap-3 rounded-lg px-2 py-2">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-700 text-sm font-semibold text-white">
@@ -118,16 +123,17 @@ export default function Layout() {
       )}
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur lg:hidden">
+        <header style={{ paddingTop: 'env(safe-area-inset-top)' }} className="sticky top-0 z-20 flex min-h-14 items-center gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur lg:hidden">
           <button onClick={() => setOpen(true)} className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-100" aria-label="Abrir menú">
             <Menu className="h-5 w-5" />
           </button>
           <span className="font-semibold text-slate-900">ERP Inventario</span>
         </header>
-        <main className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
+        <main className="mx-auto max-w-[1400px] px-3 pb-28 pt-4 sm:px-6 sm:py-6 lg:px-8 lg:pb-6">
           <Outlet />
         </main>
       </div>
+      <BottomNav onMenu={() => setOpen(true)} alertCount={alertCount} />
     </div>
   );
 }
