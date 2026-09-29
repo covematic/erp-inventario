@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-font-smoothing: antialiased; }
+  body { @apply text-slate-800; }
+}
+
+@layer components {
+  .card { @apply bg-white rounded-xl border border-slate-200 shadow-card; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap; }
+  .btn-primary { @apply btn bg-brand-600 text-white hover:bg-brand-700; }
+  .btn-secondary { @apply btn bg-white text-slate-700 border border-slate-300 hover:bg-slate-50; }
+  .btn-danger { @apply btn bg-red-600 text-white hover:bg-red-700; }
+  .btn-ghost { @apply btn text-slate-600 hover:bg-slate-100 px-2.5; }
+  .btn-sm { @apply px-2.5 py-1.5 text-xs; }
+  .input { @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:bg-slate-100 disabled:text-slate-500; }
+  .input-error { @apply border-red-400 focus:border-red-500 focus:ring-red-500/20; }
+  .label { @apply block text-sm font-medium text-slate-700 mb-1; }
+  .table-base { @apply min-w-full divide-y divide-slate-200 text-sm; }
+  .table-base th { @apply bg-slate-50 px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 whitespace-nowrap; }
+  .table-base td { @apply px-4 py-2.5 text-slate-700 align-middle; }
+  .table-base tbody tr { @apply hover:bg-slate-50/70; }
+  .num { @apply text-right tabular-nums whitespace-nowrap; }
+}
+
+/* ---------- Vista móvil: las tablas se muestran como tarjetas ---------- */
+@media (max-width: 767px) {
+  .input { font-size: 16px; } /* evita el zoom automático de iPhone al escribir */
+  .table-base { min-width: 0 !important; width: 100% !important; }
+  .table-base thead { display: none; }
+  .table-base,
+  .table-base tbody,
+  .table-base tfoot,
+  .table-base tr,
+  .table-base td { display: block; box-sizing: border-box; }
+  .table-base tbody,
+  .table-base tfoot { padding: 4px 0; border: 0 !important; }
+  .table-base tbody tr,
+  .table-base tfoot tr {
+    margin-bottom: 10px;
+    border-radius: 12px;
+    border: 1px solid theme('colors.slate.200') !important;
+    background: #fff;
+    padding: 6px 0;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.05);
+    overflow: hidden;
+  }
+  .table-base tbody tr:hover { background: #fff; }
+  /* Cada celda: etiqueta a la izquierda, contenido apilado a la derecha */
+  .table-base td {
+    display: grid;
+    grid-template-columns: minmax(72px, 38%) minmax(0, 1fr);
+    column-gap: 12px;
+    align-items: center;
+    justify-items: end;
+    padding: 5px 14px !important;
+    text-align: right;
+    max-width: none !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+  .table-base td > * { grid-column: 2; }
+  .table-base td::before {
+    content: attr(data-label);
+    grid-column: 1;
+    grid-row: 1 / 20;
+    justify-self: start;
+    align-self: center;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 500;
+    color: theme('colors.slate.500');
+  }
+  .table-base td[data-label='']::before { display: none; }
+  .table-base td[data-label=''] { grid-template-columns: minmax(0, 1fr); }
+  .table-base td[data-label=''] > * { grid-column: 1; }
+  .table-base td:empty { display: none; }
+  /* La primera celda es el título de la tarjeta */
+  .table-base tbody td:first-child {
+    display: block;
+    justify-items: start;
+    text-align: left;
+    font-size: 15px;
+    font-weight: 600;
+    padding-bottom: 8px !important;
+    margin-bottom: 4px;
+    border-bottom: 1px solid theme('colors.slate.100');
+  }
+  .table-base tbody td:first-child::before { display: block; margin-bottom: 2px; font-weight: 500; }
+  /* Columna de acciones al pie de la tarjeta */
+  .table-base td:last-child:has(button, a):not(:has(input))::before { display: none; }
+  .table-base td:last-child:has(button, a):not(:has(input)) { grid-template-columns: minmax(0, 1fr); border-top: 1px solid theme('colors.slate.100'); margin-top: 4px; padding-top: 8px !important; }
+  .table-base td:last-child:has(button, a):not(:has(input)) > * { grid-column: 1; }
+  .table-base td .btn-sm { padding: 8px 12px; }
+  .table-base td input.input { max-width: 140px; }
+}
+
+/* Espacio para la barra inferior en iPhone */
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
