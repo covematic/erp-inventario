@@ -34,21 +34,21 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-brand-950 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-slate-900 p-4">
       <div className="w-full max-w-md">
         <div className="mb-6 flex items-center justify-center gap-3 text-white">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-600">
+          <div className="flex h-11 w-11 items-center justify-center rounded-md bg-beam-500 text-slate-900">
             <Warehouse className="h-6 w-6" />
           </div>
           <div>
-            <p className="text-lg font-semibold">ERP Inventario</p>
+            <p className="font-display text-2xl font-semibold leading-none">ERP Inventario</p>
             <p className="text-sm text-slate-400">Control de almacén, guías y devoluciones</p>
           </div>
         </div>
-        <form onSubmit={submit} className="rounded-2xl bg-white p-6 shadow-xl sm:p-8" noValidate>
+        <form onSubmit={submit} className="rounded-md bg-white p-6 sm:p-8" noValidate>
           <h1 className="text-xl font-semibold text-slate-900">Iniciar sesión</h1>
           <p className="mt-1 text-sm text-slate-500">Ingrese con su cuenta de usuario</p>
-          {error && <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
+          {error && <div className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
           <div className="mt-5 space-y-4">
             <div>
               <label className="label" htmlFor="email">Correo</label>
@@ -63,10 +63,10 @@ export default function Login() {
             </button>
           </div>
           {import.meta.env.DEV && <div className="mt-6 border-t border-slate-200 pt-4">
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">Usuarios de prueba</p>
+            <p className="mb-2 text-sm font-medium text-slate-500">Usuarios de prueba</p>
             <div className="grid gap-2 sm:grid-cols-3">
               {DEMO.map(([rol, e, p]) => (
-                <button type="button" key={e} onClick={() => { setEmail(e); setPassword(p); }} className="rounded-lg border border-slate-200 px-2 py-1.5 text-xs text-slate-600 hover:border-brand-300 hover:bg-brand-50">
+                <button type="button" key={e} onClick={() => { setEmail(e); setPassword(p); }} className="rounded-md border border-slate-200 px-2 py-1.5 text-xs text-slate-600 hover:border-brand-300 hover:bg-brand-50">
                   {rol}
                 </button>
               ))}

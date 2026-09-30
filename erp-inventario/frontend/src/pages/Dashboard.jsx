@@ -10,9 +10,9 @@ import { fmtNum, fmtMoney, fmtDateTime } from '../utils/format';
 
 // Paleta categórica validada (daltonismo y contraste); fija por serie, nunca por posición
 const SERIES = [
-  { key: 'entradas', label: 'Entradas', color: '#2a78d6' },
-  { key: 'salidas', label: 'Salidas', color: '#eb6834' },
-  { key: 'devoluciones', label: 'Devoluciones', color: '#1baf7a' },
+  { key: 'entradas', label: 'Entradas', color: '#2E63B8' },
+  { key: 'salidas', label: 'Salidas', color: '#E8741C' },
+  { key: 'devoluciones', label: 'Devoluciones', color: '#12917E' },
 ];
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -24,7 +24,7 @@ const labelMes = (ym) => {
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs shadow-lg">
+    <div className="rounded-md border border-slate-200 bg-white px-3 py-2 text-xs shadow-lg">
       <p className="mb-1 font-semibold text-slate-800">{label}</p>
       {payload.map((p) => (
         <p key={p.dataKey} className="flex items-center gap-2 text-slate-600">
@@ -50,7 +50,7 @@ export default function Dashboard() {
     <>
       <PageHeader title="Dashboard" subtitle="Resumen del inventario y de los movimientos recientes" />
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4">
         <StatCard label="Productos registrados" value={fmtNum(kpis.total_productos)} icon={Package} onClick={() => navigate('/productos')} />
         <StatCard label="Stock disponible" value={`${fmtNum(kpis.stock_disponible)} und.`} icon={Boxes} tone="green"
           hint={`${fmtNum(kpis.stock_comprometido)} comprometidas`} onClick={() => navigate('/inventario')} />
@@ -73,7 +73,7 @@ export default function Dashboard() {
               <h2 className="font-semibold text-slate-900">Entradas, salidas y devoluciones</h2>
               <p className="text-xs text-slate-500">Unidades por mes · últimos 6 meses</p>
             </div>
-            <div className="flex rounded-lg border border-slate-200 p-0.5">
+            <div className="flex rounded-md border border-slate-200 p-0.5">
               <button onClick={() => setVista('grafico')} className={`rounded-md p-1.5 ${vista === 'grafico' ? 'bg-slate-100 text-slate-900' : 'text-slate-400'}`} aria-label="Ver gráfico"><BarChart3 className="h-4 w-4" /></button>
               <button onClick={() => setVista('tabla')} className={`rounded-md p-1.5 ${vista === 'tabla' ? 'bg-slate-100 text-slate-900' : 'text-slate-400'}`} aria-label="Ver tabla"><Table2 className="h-4 w-4" /></button>
             </div>
@@ -82,10 +82,10 @@ export default function Dashboard() {
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={serieFmt} barGap={2} barCategoryGap="22%" margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
-                  <CartesianGrid vertical={false} stroke="#e2e8f0" />
-                  <XAxis dataKey="mes" tickLine={false} axisLine={{ stroke: '#cbd5e1' }} tick={{ fontSize: 12, fill: '#64748b' }} />
-                  <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(v) => fmtNum(v)} />
-                  <Tooltip content={<ChartTooltip />} cursor={{ fill: '#f1f5f9' }} />
+                  <CartesianGrid vertical={false} stroke="#D9DED7" />
+                  <XAxis dataKey="mes" tickLine={false} axisLine={{ stroke: '#C0C7BE' }} tick={{ fontSize: 12, fill: '#666F65' }} />
+                  <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: '#666F65' }} tickFormatter={(v) => fmtNum(v)} />
+                  <Tooltip content={<ChartTooltip />} cursor={{ fill: '#ECEEEA' }} />
                   <Legend iconType="square" iconSize={10} wrapperStyle={{ fontSize: 12, color: '#475569' }} />
                   {SERIES.map((s) => (
                     <Bar key={s.key} dataKey={s.key} name={s.label} fill={s.color} radius={[4, 4, 0, 0]} maxBarSize={28} />
@@ -154,7 +154,7 @@ export default function Dashboard() {
                     <tr key={m.id}>
                       <td className="whitespace-nowrap text-slate-500">{fmtDateTime(m.fecha)}</td>
                       <td><TipoMovBadge tipo={m.tipo} /></td>
-                      <td className="font-mono text-xs">{m.documento_numero}</td>
+                      <td><span className="code-tag">{m.documento_numero}</span></td>
                       <td className="max-w-[220px] truncate">{m.producto_nombre}</td>
                       <td className={`num font-medium ${cant < 0 ? 'text-slate-900' : 'text-emerald-700'}`}>{cant > 0 ? '+' : ''}{fmtNum(cant)} {m.unidad_medida}</td>
                       <td className="whitespace-nowrap text-slate-500">{m.usuario_nombre}</td>
@@ -176,11 +176,11 @@ export default function Dashboard() {
                 return (
                   <li key={p.id}>
                     <div className="flex justify-between gap-2 text-sm">
-                      <span className="truncate text-slate-700"><span className="font-mono text-xs text-slate-500">{p.codigo}</span> {p.nombre}</span>
+                      <span className="truncate text-slate-700"><span className="code-tag">{p.codigo}</span> {p.nombre}</span>
                       <span className="shrink-0 font-medium tabular-nums text-slate-900">{fmtMoney(p.valor)}</span>
                     </div>
                     <div className="mt-1.5 h-1.5 rounded-full bg-slate-100">
-                      <div className="h-full rounded-full bg-[#2a78d6]" style={{ width: `${(Number(p.valor) / max) * 100}%` }} />
+                      <div className="h-full rounded-full bg-[#2E63B8]" style={{ width: `${(Number(p.valor) / max) * 100}%` }} />
                     </div>
                   </li>
                 );

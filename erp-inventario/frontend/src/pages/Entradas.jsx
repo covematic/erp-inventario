@@ -105,14 +105,14 @@ function EntradaForm({ open, onClose, onSaved }) {
         <Field label="Observaciones" className="sm:col-span-3"><input className="input" value={f.observaciones || ''} onChange={set('observaciones')} /></Field>
       </div>
 
-      <div className="mt-5 rounded-lg border border-slate-200">
+      <div className="mt-5 rounded-md border border-slate-200">
         <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-2">
           <span className="text-sm font-medium text-slate-700">Productos</span>
           <button className="btn-secondary btn-sm" onClick={() => setLineas((l) => [...l, linea()])}><Plus className="h-4 w-4" /> Agregar</button>
         </div>
         {errors.items && <p className="px-3 pt-2 text-sm text-red-600">{errors.items}</p>}
         <div className="space-y-2 p-3">
-          <div className="hidden grid-cols-12 gap-2 px-1 text-xs font-medium uppercase text-slate-500 sm:grid">
+          <div className="hidden grid-cols-12 gap-2 px-1 font-display text-[13px] font-semibold text-slate-500 sm:grid">
             <span className="col-span-6">Producto</span><span className="col-span-2 text-right">Cantidad</span><span className="col-span-2 text-right">Costo unit. (S/)</span><span className="col-span-2 text-right">Costo total</span>
           </div>
           {lineas.map((l) => {
@@ -174,13 +174,13 @@ function EntradaDetalle({ id, onClose, onChanged }) {
             <DetailItem label="Registrado el">{fmtDateTime(e.created_at)}</DetailItem>
             {e.observaciones && <div className="col-span-2"><DetailItem label="Observaciones">{e.observaciones}</DetailItem></div>}
           </dl>
-          {e.estado === 'ANULADA' && <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">Anulada el {fmtDateTime(e.anulado_at)} por {e.anulado_por_nombre}. Motivo: {e.motivo_anulacion}</div>}
-          <div className="overflow-x-auto rounded-lg border border-slate-200">
+          {e.estado === 'ANULADA' && <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">Anulada el {fmtDateTime(e.anulado_at)} por {e.anulado_por_nombre}. Motivo: {e.motivo_anulacion}</div>}
+          <div className="overflow-x-auto rounded-md border border-slate-200">
             <table className="table-base">
               <thead><tr><th>SKU</th><th>Producto</th><th className="num">Cantidad</th><th className="num">Costo unit.</th><th className="num">Costo total</th></tr></thead>
               <tbody className="divide-y divide-slate-100">
                 {e.detalles.map((d) => (
-                  <tr key={d.id}><td className="font-mono text-xs">{d.sku}</td><td>{d.producto_nombre}</td><td className="num">{fmtNum(d.cantidad)} {d.unidad_medida}</td><td className="num">{fmtMoney(d.costo_unitario)}</td><td className="num">{fmtMoney(d.costo_total)}</td></tr>
+                  <tr key={d.id}><td><span className="code-tag">{d.sku}</span></td><td>{d.producto_nombre}</td><td className="num">{fmtNum(d.cantidad)} {d.unidad_medida}</td><td className="num">{fmtMoney(d.costo_unitario)}</td><td className="num">{fmtMoney(d.costo_total)}</td></tr>
                 ))}
               </tbody>
               <tfoot><tr className="bg-slate-50 font-semibold"><td colSpan={4} className="text-right">Total</td><td className="num">{fmtMoney(e.total)}</td></tr></tfoot>
@@ -235,7 +235,7 @@ export default function Entradas() {
             <tbody className="divide-y divide-slate-100">
               {data.data.map((e) => (
                 <tr key={e.id} className="cursor-pointer" onClick={() => setVer(e.id)}>
-                  <td className="font-mono text-xs font-medium text-slate-900">{e.numero}</td>
+                  <td><span className="code-tag">{e.numero}</span></td>
                   <td className="whitespace-nowrap">{fmtDate(e.fecha)}</td>
                   <td className="max-w-[220px] truncate">{e.proveedor_nombre || <span className="text-slate-400">Sin proveedor</span>}</td>
                   <td className="whitespace-nowrap text-slate-500">{e.documento_ref || '—'}</td>

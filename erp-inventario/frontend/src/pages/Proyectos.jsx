@@ -72,12 +72,12 @@ function ProyectoDetalle({ id, onClose }) {
           <div>
             <h3 className="mb-2 text-sm font-semibold text-slate-900">Materiales consumidos</h3>
             {p.consumo.length === 0 ? <p className="text-sm text-slate-500">Aún no hay guías despachadas para este proyecto.</p> : (
-              <div className="overflow-x-auto rounded-lg border border-slate-200">
+              <div className="overflow-x-auto rounded-md border border-slate-200">
                 <table className="table-base">
                   <thead><tr><th>SKU</th><th>Producto</th><th className="num">Despachado</th><th className="num">Devuelto</th><th className="num">Consumo neto</th><th className="num">Valor</th></tr></thead>
                   <tbody className="divide-y divide-slate-100">
                     {p.consumo.map((c) => (
-                      <tr key={c.producto_id}><td className="font-mono text-xs">{c.sku}</td><td>{c.nombre}</td><td className="num">{fmtNum(c.despachado)}</td><td className="num text-violet-700">{Number(c.devuelto) ? fmtNum(c.devuelto) : '—'}</td><td className="num font-medium">{fmtNum(c.consumido)} {c.unidad_medida}</td><td className="num">{fmtMoney(c.valor)}</td></tr>
+                      <tr key={c.producto_id}><td><span className="code-tag">{c.sku}</span></td><td>{c.nombre}</td><td className="num">{fmtNum(c.despachado)}</td><td className="num text-violet-700">{Number(c.devuelto) ? fmtNum(c.devuelto) : '—'}</td><td className="num font-medium">{fmtNum(c.consumido)} {c.unidad_medida}</td><td className="num">{fmtMoney(c.valor)}</td></tr>
                     ))}
                   </tbody>
                 </table>
@@ -86,12 +86,12 @@ function ProyectoDetalle({ id, onClose }) {
           </div>
           <div>
             <h3 className="mb-2 text-sm font-semibold text-slate-900">Guías de salida ({p.guias.length})</h3>
-            <div className="overflow-x-auto rounded-lg border border-slate-200">
+            <div className="overflow-x-auto rounded-md border border-slate-200">
               <table className="table-base">
                 <thead><tr><th>N° salida</th><th>Guía física</th><th>Fecha</th><th>Responsable</th><th className="num">Ítems</th><th className="num">Valor</th><th>Estado</th></tr></thead>
                 <tbody className="divide-y divide-slate-100">
                   {p.guias.map((g) => (
-                    <tr key={g.id}><td className="font-mono text-xs">{g.numero}</td><td>{g.numero_guia || '—'}</td><td>{fmtDate(g.fecha)}</td><td>{g.responsable}</td><td className="num">{g.items}</td><td className="num">{fmtMoney(g.valor)}</td><td><EstadoBadge estado={g.estado} /></td></tr>
+                    <tr key={g.id}><td><span className="code-tag">{g.numero}</span></td><td>{g.numero_guia || '—'}</td><td>{fmtDate(g.fecha)}</td><td>{g.responsable}</td><td className="num">{g.items}</td><td className="num">{fmtMoney(g.valor)}</td><td><EstadoBadge estado={g.estado} /></td></tr>
                   ))}
                 </tbody>
               </table>
@@ -133,7 +133,7 @@ export default function Proyectos() {
             <tbody className="divide-y divide-slate-100">
               {data.map((p) => (
                 <tr key={p.id}>
-                  <td className="font-mono text-xs font-medium">{p.codigo}</td>
+                  <td><span className="code-tag">{p.codigo}</span></td>
                   <td><p className="font-medium text-slate-900">{p.nombre}</p><p className="text-xs text-slate-500">{p.cliente || '—'}</p></td>
                   <td className="whitespace-nowrap">{p.responsable}</td>
                   <td className="whitespace-nowrap">{fmtDate(p.fecha_inicio)}</td>

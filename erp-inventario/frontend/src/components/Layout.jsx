@@ -51,26 +51,26 @@ export default function Layout() {
   const sidebar = (
     <div className="flex h-full flex-col bg-slate-900 text-slate-300">
       <div className="flex items-center gap-2.5 px-5 py-5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
+        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-beam-500 text-slate-900">
           <Warehouse className="h-5 w-5" />
         </div>
         <div>
-          <p className="text-sm font-semibold text-white">ERP Inventario</p>
+          <p className="font-display text-lg font-semibold leading-none text-white">ERP Inventario</p>
           <p className="text-xs text-slate-400">Gestión de almacén</p>
         </div>
       </div>
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 pb-4">
         {visibles.map((n) =>
           n.section ? (
-            <p key={n.section} className="px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wider text-slate-500">{n.section}</p>
+            <p key={n.section} className="px-3 pb-1 pt-4 font-display text-[13px] font-medium text-slate-400">{n.section}</p>
           ) : (
             <NavLink
               key={n.to}
               to={n.to}
               end={n.end}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                  isActive ? 'bg-brand-600 text-white' : 'hover:bg-slate-800 hover:text-white'
+                `flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                  isActive ? 'bg-white/10 text-white shadow-[inset_3px_0_0_0_theme(colors.beam.500)]' : 'hover:bg-white/5 hover:text-white'
                 }`
               }
             >
@@ -85,7 +85,7 @@ export default function Layout() {
       </nav>
       <InstallApp />
       <div className="border-t border-slate-800 p-3">
-        <div className="flex items-center gap-3 rounded-lg px-2 py-2">
+        <div className="flex items-center gap-3 rounded-md px-2 py-2">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-700 text-sm font-semibold text-white">
             {user?.nombre?.[0]}
           </div>
@@ -95,7 +95,7 @@ export default function Layout() {
           </div>
           <button
             onClick={() => { logout(); navigate('/login'); }}
-            className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white"
+            className="rounded-md p-2 text-slate-400 hover:bg-slate-800 hover:text-white"
             title="Cerrar sesión"
             aria-label="Cerrar sesión"
           >
@@ -115,7 +115,7 @@ export default function Layout() {
           <div className="absolute inset-0 bg-slate-900/60" onClick={() => setOpen(false)} />
           <aside className="absolute inset-y-0 left-0 w-72 max-w-[85%]">
             {sidebar}
-            <button onClick={() => setOpen(false)} className="absolute right-3 top-5 rounded-lg p-1 text-slate-400 hover:text-white" aria-label="Cerrar menú">
+            <button onClick={() => setOpen(false)} className="absolute right-3 top-5 rounded-md p-1 text-slate-400 hover:text-white" aria-label="Cerrar menú">
               <X className="h-5 w-5" />
             </button>
           </aside>
@@ -124,10 +124,11 @@ export default function Layout() {
 
       <div className="lg:pl-64">
         <header style={{ paddingTop: 'env(safe-area-inset-top)' }} className="sticky top-0 z-20 flex min-h-14 items-center gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur lg:hidden">
-          <button onClick={() => setOpen(true)} className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-100" aria-label="Abrir menú">
+          <button onClick={() => setOpen(true)} className="rounded-md p-1.5 text-slate-600 hover:bg-slate-100" aria-label="Abrir menú">
             <Menu className="h-5 w-5" />
           </button>
-          <span className="font-semibold text-slate-900">ERP Inventario</span>
+          <span className="flex h-7 w-7 items-center justify-center rounded-[5px] bg-beam-500 text-slate-900"><Warehouse className="h-4 w-4" /></span>
+          <span className="font-display text-xl font-semibold text-slate-900">ERP Inventario</span>
         </header>
         <main className="mx-auto max-w-[1400px] px-3 pb-28 pt-4 sm:px-6 sm:py-6 lg:px-8 lg:pb-6">
           <Outlet />

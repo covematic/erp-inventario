@@ -142,15 +142,15 @@ function ProductoForm({ open, producto, categorias, proveedores, onCategoriaCrea
         <div>
           <span className="label">Código / SKU {!usaAuto && <span className="text-red-500">*</span>}</span>
           {!editando && (
-            <div className="mb-2 flex rounded-lg bg-slate-100 p-1" role="radiogroup" aria-label="Tipo de código">
+            <div className="mb-2 flex rounded-md bg-slate-100 p-1" role="radiogroup" aria-label="Tipo de código">
               <button type="button" role="radio" aria-checked={skuAuto} className={opcion(skuAuto)} onClick={() => setSkuAuto(true)}>Automático</button>
               <button type="button" role="radio" aria-checked={!skuAuto} className={opcion(!skuAuto)} onClick={() => setSkuAuto(false)}>Ingresar código</button>
             </div>
           )}
           {usaAuto ? (
-            <div className="flex h-[38px] items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 text-sm">
+            <div className="flex h-[38px] items-center rounded-md border border-dashed border-slate-300 bg-slate-50 px-3 text-sm">
               {f.categoria_id
-                ? (skuSugerido ? <span>Se asignará <b className="font-mono text-slate-900">{skuSugerido}</b></span> : <span className="text-slate-400">Calculando…</span>)
+                ? (skuSugerido ? <span>Se asignará <span className="code-tag">{skuSugerido}</span></span> : <span className="text-slate-400">Calculando…</span>)
                 : <span className="text-slate-400">Elija una categoría para ver el código</span>}
             </div>
           ) : (
@@ -200,7 +200,7 @@ function ProductoForm({ open, producto, categorias, proveedores, onCategoriaCrea
         </Field>
 
         {!editando && (
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 sm:col-span-2">
+          <div className="rounded-md border border-emerald-200 bg-emerald-50/60 p-3 sm:col-span-2">
             <p className="text-sm font-semibold text-emerald-900">Stock inicial</p>
             <p className="mb-3 text-xs text-emerald-800/80">
               Cantidad que ya tiene en el almacén. Se registra como entrada «Inventario inicial», valorizada al precio de compra, y aparece en el Kardex. Déjelo vacío si aún no hay unidades.
@@ -309,7 +309,7 @@ export default function Productos() {
             <tbody className="divide-y divide-slate-100">
               {data.data.map((p) => (
                 <tr key={p.id} className={p.activo ? '' : 'opacity-60'}>
-                  <td className="font-mono text-xs">{p.sku}</td>
+                  <td><span className="code-tag">{p.sku}</span></td>
                   <td>
                     <p className="font-medium text-slate-900">{p.nombre}</p>
                     <p className="text-xs text-slate-500">{p.proveedor_nombre || 'Sin proveedor'} · {p.unidad_medida}</p>

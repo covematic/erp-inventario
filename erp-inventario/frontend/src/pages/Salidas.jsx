@@ -71,17 +71,17 @@ export function SalidaDetalle({ id, onClose, onChanged }) {
             {s.observaciones && <div className="col-span-2 sm:col-span-4"><DetailItem label="Observaciones">{s.observaciones}</DetailItem></div>}
           </dl>
           {s.estado === 'ANULADA' && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
               Anulada el {fmtDateTime(s.anulado_at)} por {s.anulado_por_nombre}. Motivo: {s.motivo_anulacion}
             </div>
           )}
-          <div className="overflow-x-auto rounded-lg border border-slate-200">
+          <div className="overflow-x-auto rounded-md border border-slate-200">
             <table className="table-base">
               <thead><tr><th>SKU</th><th>Producto</th><th className="num">Cantidad</th><th className="num">Devuelto</th><th className="num">Pendiente</th><th className="num">Costo unit.</th><th className="num">Valor</th></tr></thead>
               <tbody className="divide-y divide-slate-100">
                 {s.detalles.map((d) => (
                   <tr key={d.id}>
-                    <td className="font-mono text-xs">{d.sku}</td>
+                    <td><span className="code-tag">{d.sku}</span></td>
                     <td>{d.producto_nombre}</td>
                     <td className="num">{fmtNum(d.cantidad)} {d.unidad_medida}</td>
                     <td className="num text-violet-700">{Number(d.cantidad_devuelta) ? fmtNum(d.cantidad_devuelta) : '—'}</td>
@@ -97,10 +97,10 @@ export function SalidaDetalle({ id, onClose, onChanged }) {
           {s.devoluciones.length > 0 && (
             <div>
               <h3 className="mb-2 text-sm font-semibold text-slate-900">Devoluciones asociadas</h3>
-              <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200 text-sm">
+              <ul className="divide-y divide-slate-100 rounded-md border border-slate-200 text-sm">
                 {s.devoluciones.map((d) => (
                   <li key={d.id} className="flex flex-wrap justify-between gap-2 px-3 py-2">
-                    <span><span className="font-mono text-xs">{d.numero}</span> · {d.motivo}</span>
+                    <span><span className="code-tag">{d.numero}</span> · {d.motivo}</span>
                     <span className="text-slate-500">{fmtDate(d.fecha)} · {d.responsable}</span>
                   </li>
                 ))}
@@ -176,7 +176,7 @@ export default function Salidas() {
               {data.data.map((s) => (
                 <tr key={s.id} className="cursor-pointer" onClick={() => setVer(s.id)}>
                   <td>
-                    <p className="font-mono text-xs font-medium text-slate-900">{s.numero}</p>
+                    <p><span className="code-tag">{s.numero}</span></p>
                     {s.numero_guia && <p className="text-xs text-slate-500">{s.numero_guia}</p>}
                   </td>
                   <td className="whitespace-nowrap">{fmtDate(s.fecha)}</td>

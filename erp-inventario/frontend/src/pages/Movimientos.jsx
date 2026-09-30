@@ -56,7 +56,7 @@ export default function Movimientos() {
                 <tr key={m.id}>
                   <td className="whitespace-nowrap text-slate-600">{fmtDateTime(m.fecha)}</td>
                   <td><TipoMovBadge tipo={m.tipo} /></td>
-                  <td className="font-mono text-xs" title={m.observacion || ''}>{m.documento_numero}</td>
+                  <td title={m.observacion || ''}><span className="code-tag">{m.documento_numero}</span></td>
                   <td className="max-w-[240px]"><Link to={`/kardex/${m.producto_id}?almacen_id=${m.almacen_id}`} className="block truncate hover:text-brand-700">{m.producto_nombre}</Link><span className="text-xs text-slate-500">{m.sku}</span></td>
                   <td className="whitespace-nowrap text-slate-500">{m.almacen_nombre}</td>
                   <td className="num text-emerald-700">{Number(m.cantidad_entrada) ? fmtNum(m.cantidad_entrada) : ''}</td>

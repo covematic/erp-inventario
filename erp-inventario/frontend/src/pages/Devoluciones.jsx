@@ -108,7 +108,7 @@ function DevolucionForm({ open, salidaInicial, onClose, onSaved }) {
         </Field>
 
         {salidaId && (cargandoGuia && !salida ? <LoadingBlock /> : (
-          <div className="rounded-lg border border-slate-200">
+          <div className="rounded-md border border-slate-200">
             <div className="border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
               Indique cuántas unidades vuelven en cada estado. Las dañadas o defectuosas no regresan al stock disponible.
             </div>
@@ -162,13 +162,13 @@ function DevolucionDetalle({ id, onClose }) {
             <div className="col-span-2 sm:col-span-4"><DetailItem label="Motivo">{d.motivo}</DetailItem></div>
             {d.observaciones && <div className="col-span-2 sm:col-span-4"><DetailItem label="Observaciones">{d.observaciones}</DetailItem></div>}
           </dl>
-          <div className="overflow-x-auto rounded-lg border border-slate-200">
+          <div className="overflow-x-auto rounded-md border border-slate-200">
             <table className="table-base">
               <thead><tr><th>SKU</th><th>Producto</th><th className="num">Despachado</th><th className="num">Devuelto</th><th>Estado</th></tr></thead>
               <tbody className="divide-y divide-slate-100">
                 {d.detalles.map((x) => (
                   <tr key={x.id}>
-                    <td className="font-mono text-xs">{x.sku}</td><td>{x.producto_nombre}</td>
+                    <td><span className="code-tag">{x.sku}</span></td><td>{x.producto_nombre}</td>
                     <td className="num text-slate-500">{fmtNum(x.cantidad_despachada)}</td>
                     <td className="num font-medium">{fmtNum(x.cantidad)} {x.unidad_medida}</td>
                     <td><EstadoProductoBadge estado={x.estado_producto} /></td>
@@ -225,9 +225,9 @@ export default function Devoluciones() {
             <tbody className="divide-y divide-slate-100">
               {data.data.map((d) => (
                 <tr key={d.id} className="cursor-pointer" onClick={() => setVer(d.id)}>
-                  <td className="font-mono text-xs font-medium text-slate-900">{d.numero}</td>
+                  <td><span className="code-tag">{d.numero}</span></td>
                   <td className="whitespace-nowrap">{fmtDate(d.fecha)}</td>
-                  <td className="font-mono text-xs">{d.salida_numero}</td>
+                  <td><span className="code-tag">{d.salida_numero}</span></td>
                   <td className="max-w-[220px] truncate">{d.destino_nombre}</td>
                   <td className="max-w-[220px] truncate">{d.motivo}</td>
                   <td className="num text-emerald-700">{Number(d.cant_bueno) ? fmtNum(d.cant_bueno) : '—'}</td>

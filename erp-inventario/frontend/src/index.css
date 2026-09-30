@@ -4,25 +4,37 @@
 
 @layer base {
   html { -webkit-font-smoothing: antialiased; }
-  body { @apply text-slate-800; }
+  body { @apply text-slate-800; font-feature-settings: 'tnum' 0; }
+  h1, h2, h3 { @apply font-display; text-wrap: balance; }
 }
 
 @layer components {
-  .card { @apply bg-white rounded-xl border border-slate-200 shadow-card; }
-  .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap; }
-  .btn-primary { @apply btn bg-brand-600 text-white hover:bg-brand-700; }
-  .btn-secondary { @apply btn bg-white text-slate-700 border border-slate-300 hover:bg-slate-50; }
-  .btn-danger { @apply btn bg-red-600 text-white hover:bg-red-700; }
-  .btn-ghost { @apply btn text-slate-600 hover:bg-slate-100 px-2.5; }
+  /* Paneles planos: borde fino y esquinas cortas, como un tablero de metal */
+  .card { @apply bg-white rounded-md border border-slate-200 shadow-card; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap; }
+  /* Acción principal: viga naranja con texto grafito (contraste 7:1) */
+  .btn-primary { @apply btn bg-beam-500 text-slate-900 hover:bg-beam-400 active:bg-beam-600; }
+  .btn-secondary { @apply btn bg-white text-slate-800 border border-slate-300 hover:bg-slate-50; }
+  .btn-danger { @apply btn bg-red-700 text-white hover:bg-red-800; }
+  .btn-ghost { @apply btn font-medium text-slate-600 hover:bg-slate-100 px-2.5; }
   .btn-sm { @apply px-2.5 py-1.5 text-xs; }
-  .input { @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:bg-slate-100 disabled:text-slate-500; }
-  .input-error { @apply border-red-400 focus:border-red-500 focus:ring-red-500/20; }
-  .label { @apply block text-sm font-medium text-slate-700 mb-1; }
+  .input { @apply block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/20 disabled:bg-slate-100 disabled:text-slate-500; }
+  .input-error { @apply border-red-500 focus:border-red-600 focus:ring-red-600/20; }
+  .label { @apply block text-sm font-semibold text-slate-700 mb-1; }
   .table-base { @apply min-w-full divide-y divide-slate-200 text-sm; }
-  .table-base th { @apply bg-slate-50 px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 whitespace-nowrap; }
+  .table-base th { @apply bg-slate-50 px-4 py-2.5 text-left font-display text-[13px] font-semibold text-slate-500 whitespace-nowrap; }
   .table-base td { @apply px-4 py-2.5 text-slate-700 align-middle; }
-  .table-base tbody tr { @apply hover:bg-slate-50/70; }
+  .table-base tbody tr { @apply hover:bg-slate-50; }
   .num { @apply text-right tabular-nums whitespace-nowrap; }
+
+  /* Etiqueta de ubicación: códigos de producto y de documento (el elemento distintivo del sistema) */
+  .code-tag {
+    @apply relative inline-flex items-center whitespace-nowrap rounded-[3px] bg-label-400 py-[1px] pl-[15px] pr-1.5 font-display text-[13px] font-semibold leading-5 text-slate-900;
+    box-shadow: inset 0 -2px 0 0 rgb(201 154 12 / 0.55);
+  }
+  .code-tag::before {
+    content: ''; @apply absolute left-[5px] top-1/2 h-[5px] w-[5px] -translate-y-1/2 rounded-full bg-slate-900/70;
+  }
 }
 
 /* ---------- Vista móvil: las tablas se muestran como tarjetas ---------- */
@@ -40,7 +52,7 @@
   .table-base tbody tr,
   .table-base tfoot tr {
     margin-bottom: 10px;
-    border-radius: 12px;
+    border-radius: 6px;
     border: 1px solid theme('colors.slate.200') !important;
     background: #fff;
     padding: 6px 0;

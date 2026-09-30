@@ -48,7 +48,7 @@ export default function Reportes() {
         <div className="card h-fit p-2 lg:col-span-1">
           {!catalogo ? <LoadingBlock /> : catalogo.map((r) => (
             <button key={r.id} onClick={() => { setSel(r.id); setRep(null); }}
-              className={`block w-full rounded-lg px-3 py-2 text-left text-sm ${sel === r.id ? 'bg-brand-50 font-medium text-brand-700' : 'text-slate-600 hover:bg-slate-50'}`}>
+              className={`block w-full rounded-md px-3 py-2 text-left text-sm ${sel === r.id ? 'bg-brand-50 font-medium text-brand-700' : 'text-slate-600 hover:bg-slate-50'}`}>
               {r.titulo}
             </button>
           ))}

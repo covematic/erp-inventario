@@ -40,7 +40,7 @@ export default function ProductSelect({ products, value, onChange, showStock, ex
         <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-slate-400" />
       </button>
       {open && (
-        <div className="absolute z-30 mt-1 w-full min-w-[280px] rounded-lg border border-slate-200 bg-white shadow-lg">
+        <div className="absolute z-30 mt-1 w-full min-w-[280px] rounded-md border border-slate-200 bg-white shadow-lg">
           <div className="p-2">
             <input autoFocus className="input" placeholder="Buscar por SKU o nombre…" value={q} onChange={(e) => setQ(e.target.value)} />
           </div>

@@ -141,7 +141,7 @@ export default function SalidaForm() {
             <div className="grid grid-cols-2 gap-2">
               {[['PROYECTO', 'Proyecto', FolderKanban], ['AREA', 'Área interna', Building2]].map(([v, l, Icon]) => (
                 <button key={v} type="button" onClick={() => setDestino(v)}
-                  className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium ${f.tipo_destino === v ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-slate-300 text-slate-600 hover:bg-slate-50'}`}>
+                  className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium ${f.tipo_destino === v ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-slate-300 text-slate-600 hover:bg-slate-50'}`}>
                   <Icon className="h-4 w-4" /> {l}
                 </button>
               ))}
@@ -185,7 +185,7 @@ export default function SalidaForm() {
           <Field label="Responsable que recibe" required error={errors.responsable}>
             <input className={`input ${errors.responsable ? 'input-error' : ''}`} value={f.responsable} onChange={set('responsable')} />
           </Field>
-          <div className="rounded-lg border border-slate-200 p-3">
+          <div className="rounded-md border border-slate-200 p-3">
             <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
               <input type="checkbox" className="h-4 w-4 rounded border-slate-300" checked={f.requiere_devolucion} onChange={set('requiere_devolucion')} />
               Requiere devolución (herramientas o préstamo)
@@ -209,7 +209,7 @@ export default function SalidaForm() {
             </div>
             <button className="btn-secondary btn-sm" onClick={() => setLineas((l) => [...l, nuevaLinea()])}><Plus className="h-4 w-4" /> Agregar</button>
           </div>
-          {errors.items && <p className="mx-5 mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{errors.items}</p>}
+          {errors.items && <p className="mx-5 mt-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{errors.items}</p>}
           <div className="flex-1 space-y-3 p-5">
             {lineas.map((l, i) => {
               const disp = l.producto_id ? (dispPorProducto[l.producto_id] ?? 0) : null;
@@ -217,7 +217,7 @@ export default function SalidaForm() {
               const excede = l.producto_id && Number(l.cantidad) > disp;
               const falta = faltantes[l.producto_id] !== undefined;
               return (
-                <div key={l.key} className={`grid grid-cols-12 items-start gap-3 rounded-lg border p-3 ${excede || falta ? 'border-red-300 bg-red-50/40' : 'border-slate-200'}`}>
+                <div key={l.key} className={`grid grid-cols-12 items-start gap-3 rounded-md border p-3 ${excede || falta ? 'border-red-300 bg-red-50/40' : 'border-slate-200'}`}>
                   <span className="col-span-12 text-xs font-medium text-slate-400 sm:col-span-1 sm:pt-2.5">#{i + 1}</span>
                   <div className="col-span-12 sm:col-span-6">
                     <ProductSelect products={listaProductos} value={l.producto_id} excludeIds={usados} showStock
@@ -246,7 +246,7 @@ export default function SalidaForm() {
               );
             })}
           </div>
-          <div className="flex flex-col gap-3 border-t border-slate-200 bg-slate-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:rounded-b-xl">
+          <div className="flex flex-col gap-3 border-t border-slate-200 bg-slate-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:rounded-b-md">
             <p className="text-sm text-slate-600">{usados.length} producto(s) · {fmtNum(totalUnidades)} unidades</p>
             <div className="flex flex-wrap gap-2">
               <button className="btn-secondary" onClick={() => pedirConfirmacion('pendiente')} disabled={saving}>

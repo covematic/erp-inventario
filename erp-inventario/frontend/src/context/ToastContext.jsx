@@ -34,7 +34,7 @@ export function ToastProvider({ children }) {
         {toasts.map((t) => {
           const { icon: Icon, cls, iconCls } = ESTILOS[t.type];
           return (
-            <div key={t.id} role="status" className={`flex items-start gap-3 rounded-lg border px-4 py-3 text-sm shadow-lg ${cls}`}>
+            <div key={t.id} role="status" className={`flex items-start gap-3 rounded-md border px-4 py-3 text-sm shadow-lg ${cls}`}>
               <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${iconCls}`} />
               <p className="flex-1 leading-snug">{t.message}</p>
               <button onClick={() => remove(t.id)} className="opacity-60 hover:opacity-100" aria-label="Cerrar">

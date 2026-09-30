@@ -35,11 +35,11 @@ export default function InstallApp() {
 
   return (
     <div className="px-3 pb-2">
-      <button onClick={instalar} className="flex w-full items-center gap-3 rounded-lg bg-brand-600/15 px-3 py-2 text-sm font-medium text-brand-300 hover:bg-brand-600/25">
+      <button onClick={instalar} className="flex w-full items-center gap-3 rounded-md bg-brand-600/15 px-3 py-2 text-sm font-medium text-brand-300 hover:bg-brand-600/25">
         <Download className="h-[18px] w-[18px]" /> Instalar aplicación
       </button>
       {ayudaIOS && (
-        <div className="relative mt-2 rounded-lg bg-slate-800 p-3 text-xs leading-relaxed text-slate-300">
+        <div className="relative mt-2 rounded-md bg-slate-800 p-3 text-xs leading-relaxed text-slate-300">
           <button onClick={() => setAyudaIOS(false)} className="absolute right-2 top-2 text-slate-500 hover:text-white" aria-label="Cerrar"><X className="h-4 w-4" /></button>
           En Safari toca <Share className="inline h-3.5 w-3.5" /> <b>Compartir</b> y luego <b>“Agregar a pantalla de inicio”</b>.
         </div>

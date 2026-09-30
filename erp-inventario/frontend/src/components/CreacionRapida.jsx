@@ -36,8 +36,8 @@ export function CreacionRapida({ titulo, campos, endpoint, onCreado, onCancelar 
   }
 
   return (
-    <div className="mt-2 space-y-2 rounded-lg border border-brand-200 bg-brand-50/50 p-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">Nueva {titulo.toLowerCase()}</p>
+    <div className="mt-2 space-y-2 rounded-md border border-brand-200 bg-brand-50/50 p-3">
+      <p className="text-sm font-semibold text-brand-700">Nueva {titulo.toLowerCase()}</p>
       {campos.map((c, i) => (
         <div key={c.key}>
           <input

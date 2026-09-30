@@ -81,7 +81,7 @@ export default function Kardex() {
                       <tr key={m.id}>
                         <td className="whitespace-nowrap text-slate-600">{fmtDateTime(m.fecha)}</td>
                         <td><TipoMovBadge tipo={m.tipo} /></td>
-                        <td className="font-mono text-xs">{m.documento_numero}</td>
+                        <td><span className="code-tag">{m.documento_numero}</span></td>
                         <td className="num text-emerald-700">{Number(m.cantidad_entrada) ? fmtNum(m.cantidad_entrada) : ''}</td>
                         <td className="num text-slate-900">{Number(m.cantidad_salida) ? fmtNum(m.cantidad_salida) : ''}</td>
                         <td className="num text-violet-700">

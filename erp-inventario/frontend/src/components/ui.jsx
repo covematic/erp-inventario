@@ -37,7 +37,7 @@ export function PageHeader({ title, subtitle, actions }) {
   return (
     <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900 sm:text-2xl">{title}</h1>
+        <h1 className="text-[28px] font-bold leading-tight text-slate-900 sm:text-[34px]">{title}</h1>
         {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
       </div>
       {actions && <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap [&>*]:py-2.5 sm:[&>*]:py-2">{actions}</div>}
@@ -146,27 +146,20 @@ export function Pagination({ page, limit, total, onPage }) {
 }
 
 export function StatCard({ label, value, icon: Icon, tone = 'blue', hint, onClick }) {
+  // tone marca solo el ícono; el número siempre va en tinta para que se lea primero
   const tones = {
-    blue: 'bg-brand-50 text-brand-600',
-    green: 'bg-emerald-50 text-emerald-600',
-    amber: 'bg-amber-50 text-amber-600',
-    red: 'bg-red-50 text-red-600',
-    purple: 'bg-violet-50 text-violet-600',
-    slate: 'bg-slate-100 text-slate-600',
+    blue: 'text-brand-600', green: 'text-emerald-700', amber: 'text-amber-600',
+    red: 'text-red-600', purple: 'text-violet-600', slate: 'text-slate-500',
   };
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag onClick={onClick} className={`card flex items-start gap-3 p-4 text-left ${onClick ? 'transition hover:border-brand-300 hover:shadow-md' : ''}`}>
-      {Icon && (
-        <div className={`rounded-lg p-2.5 ${tones[tone]}`}>
-          <Icon className="h-5 w-5" />
-        </div>
-      )}
-      <div className="min-w-0">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
-        <p className="mt-1 truncate text-xl font-semibold tabular-nums text-slate-900">{value}</p>
-        {hint && <p className="mt-0.5 text-xs text-slate-500">{hint}</p>}
+    <Tag onClick={onClick} className={`card flex min-w-0 flex-col gap-1 p-3 text-left sm:p-4 ${onClick ? 'transition-colors hover:border-slate-400' : ''}`}>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[13px] font-medium text-slate-500">{label}</p>
+        {Icon && <Icon className={`h-[18px] w-[18px] shrink-0 ${tones[tone]}`} />}
       </div>
+      <p className="truncate font-display text-[26px] font-semibold leading-none tabular-nums text-slate-900 sm:text-[32px]">{value}</p>
+      {hint && <p className="text-xs text-slate-500">{hint}</p>}
     </Tag>
   );
 }
@@ -175,7 +168,7 @@ export function StatCard({ label, value, icon: Icon, tone = 'blue', hint, onClic
 export function TableCard({ children, toolbar, footer }) {
   return (
     <div className="overflow-hidden max-md:bg-transparent md:card">
-      {toolbar && <div className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 max-md:mb-1 md:rounded-none md:border-0 md:border-b lg:flex-row lg:items-center">{toolbar}</div>}
+      {toolbar && <div className="flex flex-col gap-2 rounded-md border border-slate-200 bg-white p-3 max-md:mb-1 md:rounded-none md:border-0 md:border-b lg:flex-row lg:items-center">{toolbar}</div>}
       <div className="overflow-x-auto">{children}</div>
       {footer}
     </div>
@@ -185,7 +178,7 @@ export function TableCard({ children, toolbar, footer }) {
 export function DetailItem({ label, children }) {
   return (
     <div>
-      <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</dt>
+      <dt className="text-[13px] font-medium text-slate-500">{label}</dt>
       <dd className="mt-0.5 text-sm text-slate-800">{children || '—'}</dd>
     </div>
   );
