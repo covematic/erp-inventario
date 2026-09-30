@@ -15,10 +15,12 @@ const VACIO = {
 };
 const UNIDADES = ['UND', 'PAR', 'CAJA', 'ROLLO', 'GLN', 'KG', 'M', 'M2', 'LT', 'PQT', 'JGO'];
 
-function validar(f) {
+function validar(f, skuAuto) {
   const e = {};
-  if (!f.sku.trim()) e.sku = 'El código/SKU es obligatorio';
-  else if (!/^[A-Za-z0-9._-]+$/.test(f.sku.trim())) e.sku = 'Solo letras, números, punto, guion y guion bajo';
+  if (!skuAuto) {
+    if (!f.sku.trim()) e.sku = 'Escriba el código o elija "Automático"';
+    else if (!/^[A-Za-z0-9._-]+$/.test(f.sku.trim())) e.sku = 'Solo letras, números, punto, guion y guion bajo';
+  }
   if (!f.nombre.trim()) e.nombre = 'El nombre es obligatorio';
   if (!f.categoria_id) e.categoria_id = 'Seleccione una categoría';
   if (!f.unidad_medida) e.unidad_medida = 'Seleccione la unidad';
@@ -29,38 +31,135 @@ function validar(f) {
   return e;
 }
 
-function ProductoForm({ open, producto, categorias, proveedores, onClose, onSaved }) {
+/**
+ * Mini formulario para crear una categoría o un proveedor sin salir del producto.
+ * campos: [{ key, label, placeholder, validar(v) → mensaje|null }]
+ */
+function CreacionRapida({ titulo, campos, endpoint, onCreado, onCancelar }) {
   const toast = useToast();
-  const [f, setF] = useState(VACIO);
+  const [v, setV] = useState(() => Object.fromEntries(campos.map((c) => [c.key, ''])));
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+
+  async function guardar() {
+    const e = {};
+    for (const c of campos) {
+      const msg = c.validar?.(v[c.key].trim());
+      if (msg) e[c.key] = msg;
+    }
+    setErrors(e);
+    if (Object.keys(e).length) return;
+    setSaving(true);
+    try {
+      const body = Object.fromEntries(campos.map((c) => [c.key, v[c.key].trim()]));
+      const { data } = await api.post(endpoint, body);
+      toast.success(`${titulo} creado(a)`);
+      onCreado(data);
+    } catch (err) {
+      setErrors(fieldErrors(err));
+      toast.error(errorMessage(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="mt-2 space-y-2 rounded-lg border border-brand-200 bg-brand-50/50 p-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">Nueva {titulo.toLowerCase()}</p>
+      {campos.map((c, i) => (
+        <div key={c.key}>
+          <input
+            autoFocus={i === 0}
+            className={`input ${errors[c.key] ? 'input-error' : ''}`}
+            placeholder={c.placeholder}
+            value={v[c.key]}
+            onChange={(e) => setV({ ...v, [c.key]: e.target.value })}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); guardar(); } }}
+          />
+          {errors[c.key] && <p className="mt-1 text-xs text-red-600">{errors[c.key]}</p>}
+        </div>
+      ))}
+      <div className="flex justify-end gap-2">
+        <button type="button" className="btn-ghost btn-sm" onClick={onCancelar}>Cancelar</button>
+        <button type="button" className="btn-primary btn-sm" onClick={guardar} disabled={saving}>{saving ? 'Guardando…' : 'Crear y usar'}</button>
+      </div>
+    </div>
+  );
+}
+
+const CAMPOS_CATEGORIA = [
+  { key: 'nombre', placeholder: 'Nombre de la categoría (ej. Herramientas)', validar: (x) => (!x ? 'Escriba el nombre' : null) },
+];
+const CAMPOS_PROVEEDOR = [
+  { key: 'razon_social', placeholder: 'Razón social', validar: (x) => (!x ? 'Escriba la razón social' : null) },
+  { key: 'ruc', placeholder: 'RUC (solo números)', validar: (x) => (!/^\d{8,20}$/.test(x) ? 'El RUC debe tener solo dígitos (8 a 20)' : null) },
+];
+
+function EtiquetaConAccion({ label, required, accion, onAccion }) {
+  return (
+    <div className="mb-1 flex items-center justify-between">
+      <span className="text-sm font-medium text-slate-700">{label} {required && <span className="text-red-500">*</span>}</span>
+      {accion && <button type="button" onClick={onAccion} className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-800"><Plus className="h-3.5 w-3.5" /> {accion}</button>}
+    </div>
+  );
+}
+
+function ProductoForm({ open, producto, categorias, proveedores, onCategoriaCreada, onProveedorCreado, onClose, onSaved }) {
+  const toast = useToast();
+  const [f, setF] = useState(VACIO);
+  const [skuAuto, setSkuAuto] = useState(true);
+  const [skuSugerido, setSkuSugerido] = useState(null);
+  const [nuevaCat, setNuevaCat] = useState(false);
+  const [nuevoProv, setNuevoProv] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
+  const editando = !!producto;
 
   useEffect(() => {
     if (!open) return;
     setErrors({});
+    setNuevaCat(false);
+    setNuevoProv(false);
+    setSkuAuto(!producto);
     setF(producto ? {
       ...VACIO, ...producto,
       descripcion: producto.descripcion || '', proveedor_id: producto.proveedor_id || '',
     } : VACIO);
   }, [open, producto]);
 
+  // Vista previa del código que asignará el sistema según la categoría
+  useEffect(() => {
+    if (!open || editando || !skuAuto || !f.categoria_id) { setSkuSugerido(null); return; }
+    let vigente = true;
+    api.get('/productos/sku-sugerido', { params: { categoria_id: f.categoria_id } })
+      .then((r) => vigente && setSkuSugerido(r.data.sku))
+      .catch(() => vigente && setSkuSugerido(null));
+    return () => { vigente = false; };
+  }, [open, editando, skuAuto, f.categoria_id]);
+
   const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+  const usaAuto = !editando && skuAuto;
 
   async function submit(e) {
-    e.preventDefault();
-    const errs = validar(f);
+    e?.preventDefault();
+    const errs = validar(f, usaAuto);
     setErrors(errs);
     if (Object.keys(errs).length) return;
     setSaving(true);
     const body = {
-      sku: f.sku.trim(), nombre: f.nombre.trim(), descripcion: f.descripcion, categoria_id: Number(f.categoria_id),
+      nombre: f.nombre.trim(), descripcion: f.descripcion, categoria_id: Number(f.categoria_id),
       proveedor_id: f.proveedor_id ? Number(f.proveedor_id) : null, unidad_medida: f.unidad_medida,
       precio_compra: Number(f.precio_compra), precio_venta: Number(f.precio_venta), stock_minimo: Number(f.stock_minimo), activo: f.activo,
+      ...(usaAuto ? {} : { sku: f.sku.trim() }),
     };
     try {
-      if (producto) await api.put(`/productos/${producto.id}`, body);
-      else await api.post('/productos', body);
-      toast.success(producto ? 'Producto actualizado' : 'Producto registrado');
+      if (editando) {
+        await api.put(`/productos/${producto.id}`, body);
+        toast.success('Producto actualizado');
+      } else {
+        const { data } = await api.post('/productos', body);
+        toast.success(`Producto registrado con el código ${data.sku}`);
+      }
       onSaved();
     } catch (err) {
       setErrors(fieldErrors(err));
@@ -72,45 +171,79 @@ function ProductoForm({ open, producto, categorias, proveedores, onClose, onSave
 
   const margen = Number(f.precio_venta) > 0 && Number(f.precio_compra) > 0
     ? ((Number(f.precio_venta) - Number(f.precio_compra)) / Number(f.precio_venta)) * 100 : null;
+  const opcion = (activo) => `flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition ${activo ? 'bg-white text-brand-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`;
 
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title={producto ? 'Editar producto' : 'Nuevo producto'}
-      subtitle={producto ? `${producto.sku} · el stock se modifica solo con movimientos` : 'El stock inicial se registra con una entrada'}
+      title={editando ? 'Editar producto' : 'Nuevo producto'}
+      subtitle={editando ? `${producto.sku} · el stock se modifica solo con movimientos` : 'El stock inicial se registra con una entrada'}
       footer={<>
         <button className="btn-secondary" onClick={onClose}>Cancelar</button>
         <button className="btn-primary" onClick={submit} disabled={saving}>{saving ? 'Guardando…' : 'Guardar'}</button>
       </>}
     >
       <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2" noValidate>
-        <Field label="Código / SKU" required error={errors.sku}>
-          <input className={`input uppercase ${errors.sku ? 'input-error' : ''}`} value={f.sku} onChange={set('sku')} placeholder="ELE-CAB-12" />
-        </Field>
-        <Field label="Unidad de medida" required error={errors.unidad_medida}>
-          <select className="input" value={f.unidad_medida} onChange={set('unidad_medida')}>
-            {UNIDADES.map((u) => <option key={u}>{u}</option>)}
+        <div>
+          <EtiquetaConAccion label="Categoría" required accion={!nuevaCat && 'Nueva'} onAccion={() => setNuevaCat(true)} />
+          <select className={`input ${errors.categoria_id ? 'input-error' : ''}`} value={f.categoria_id} onChange={set('categoria_id')}>
+            <option value="">Seleccione…</option>
+            {categorias.filter((c) => c.activo || c.id === Number(f.categoria_id)).map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
           </select>
-        </Field>
+          {errors.categoria_id && <p className="mt-1 text-xs text-red-600">{errors.categoria_id}</p>}
+          {nuevaCat && (
+            <CreacionRapida titulo="Categoría" endpoint="/categorias" campos={CAMPOS_CATEGORIA}
+              onCancelar={() => setNuevaCat(false)}
+              onCreado={(c) => { onCategoriaCreada(c); setF((x) => ({ ...x, categoria_id: String(c.id) })); setNuevaCat(false); }} />
+          )}
+        </div>
+
+        <div>
+          <span className="label">Código / SKU {!usaAuto && <span className="text-red-500">*</span>}</span>
+          {!editando && (
+            <div className="mb-2 flex rounded-lg bg-slate-100 p-1" role="radiogroup" aria-label="Tipo de código">
+              <button type="button" role="radio" aria-checked={skuAuto} className={opcion(skuAuto)} onClick={() => setSkuAuto(true)}>Automático</button>
+              <button type="button" role="radio" aria-checked={!skuAuto} className={opcion(!skuAuto)} onClick={() => setSkuAuto(false)}>Ingresar código</button>
+            </div>
+          )}
+          {usaAuto ? (
+            <div className="flex h-[38px] items-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 text-sm">
+              {f.categoria_id
+                ? (skuSugerido ? <span>Se asignará <b className="font-mono text-slate-900">{skuSugerido}</b></span> : <span className="text-slate-400">Calculando…</span>)
+                : <span className="text-slate-400">Elija una categoría para ver el código</span>}
+            </div>
+          ) : (
+            <input className={`input uppercase ${errors.sku ? 'input-error' : ''}`} value={f.sku} onChange={set('sku')} placeholder="Ej. ELE-CAB-12 o código del proveedor" />
+          )}
+          {errors.sku && <p className="mt-1 text-xs text-red-600">{errors.sku}</p>}
+        </div>
+
         <Field label="Nombre" required error={errors.nombre} className="sm:col-span-2">
           <input className={`input ${errors.nombre ? 'input-error' : ''}`} value={f.nombre} onChange={set('nombre')} />
         </Field>
         <Field label="Descripción" className="sm:col-span-2">
           <textarea className="input" rows={2} value={f.descripcion} onChange={set('descripcion')} />
         </Field>
-        <Field label="Categoría" required error={errors.categoria_id}>
-          <select className={`input ${errors.categoria_id ? 'input-error' : ''}`} value={f.categoria_id} onChange={set('categoria_id')}>
-            <option value="">Seleccione…</option>
-            {categorias.filter((c) => c.activo || c.id === Number(f.categoria_id)).map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-          </select>
-        </Field>
-        <Field label="Proveedor">
+
+        <div>
+          <EtiquetaConAccion label="Proveedor" accion={!nuevoProv && 'Nuevo'} onAccion={() => setNuevoProv(true)} />
           <select className="input" value={f.proveedor_id} onChange={set('proveedor_id')}>
             <option value="">Sin proveedor</option>
             {proveedores.filter((p) => p.activo || p.id === Number(f.proveedor_id)).map((p) => <option key={p.id} value={p.id}>{p.razon_social}</option>)}
           </select>
+          {nuevoProv && (
+            <CreacionRapida titulo="Proveedor" endpoint="/proveedores" campos={CAMPOS_PROVEEDOR}
+              onCancelar={() => setNuevoProv(false)}
+              onCreado={(p) => { onProveedorCreado(p); setF((x) => ({ ...x, proveedor_id: String(p.id) })); setNuevoProv(false); }} />
+          )}
+        </div>
+        <Field label="Unidad de medida" required error={errors.unidad_medida}>
+          <select className="input" value={f.unidad_medida} onChange={set('unidad_medida')}>
+            {UNIDADES.map((u) => <option key={u}>{u}</option>)}
+          </select>
         </Field>
+
         <Field label="Precio de compra (S/)" required error={errors.precio_compra}>
           <input type="number" min="0" step="0.01" className={`input ${errors.precio_compra ? 'input-error' : ''}`} value={f.precio_compra} onChange={set('precio_compra')} />
         </Field>
@@ -141,8 +274,8 @@ export default function Productos() {
   const [page, setPage] = useState(1);
   const dq = useDebounce(q);
   const { data, loading, error, reload } = useFetch('/productos', { q: dq, categoria_id: categoria, estado_stock: estadoStock, activo, page, limit: 15 });
-  const { data: categorias } = useFetch('/categorias');
-  const { data: proveedores } = useFetch('/proveedores');
+  const { data: categorias, setData: setCategorias } = useFetch('/categorias');
+  const { data: proveedores, setData: setProveedores } = useFetch('/proveedores');
   const [form, setForm] = useState({ open: false, producto: null });
   const [borrar, setBorrar] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -248,6 +381,8 @@ export default function Productos() {
         producto={form.producto}
         categorias={categorias || []}
         proveedores={proveedores || []}
+        onCategoriaCreada={(c) => setCategorias((l) => [...(l || []), c].sort((a, b) => a.nombre.localeCompare(b.nombre)))}
+        onProveedorCreado={(p) => setProveedores((l) => [...(l || []), p].sort((a, b) => a.razon_social.localeCompare(b.razon_social)))}
         onClose={() => setForm({ open: false, producto: null })}
         onSaved={() => { setForm({ open: false, producto: null }); reload(); }}
       />

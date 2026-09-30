@@ -13,9 +13,12 @@ const usuario = z.object({
   activo: z.boolean().optional().default(true),
 });
 
-const producto = z.object({
-  sku: texto(40, 'El código/SKU').transform((v) => v.toUpperCase())
-    .refine((v) => /^[A-Z0-9._-]+$/.test(v), 'El SKU solo admite letras, números, punto, guion y guion bajo'),
+const skuManual = texto(40, 'El código/SKU').transform((v) => v.toUpperCase())
+  .refine((v) => /^[A-Z0-9._-]+$/.test(v), 'El SKU solo admite letras, números, punto, guion y guion bajo');
+
+// Al crear, el SKU es opcional: si viene vacío, el sistema lo genera según la categoría
+const productoCampos = {
+  sku: skuManual,
   nombre: texto(200, 'El nombre'),
   descripcion: textoOpcional(2000),
   categoria_id: id('La categoría'),
@@ -25,6 +28,11 @@ const producto = z.object({
   precio_venta: monto('El precio de venta'),
   stock_minimo: monto('El stock mínimo'),
   activo: z.boolean().optional().default(true),
+};
+const producto = z.object(productoCampos);
+const productoNuevo = z.object({
+  ...productoCampos,
+  sku: z.preprocess((v) => (typeof v === 'string' && v.trim() === '' ? undefined : v), skuManual.optional()),
 });
 
 const categoria = z.object({
@@ -139,6 +147,6 @@ const ajuste = z.object({
 });
 
 module.exports = {
-  login, usuario, producto, categoria, proveedor, almacen, area, proyecto,
+  login, usuario, producto, productoNuevo, categoria, proveedor, almacen, area, proyecto,
   entrada, salida, devolucion, ajuste, motivoAnulacion, MOTIVOS_SALIDA,
 };

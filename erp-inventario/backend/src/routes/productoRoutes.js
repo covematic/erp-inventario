@@ -7,8 +7,9 @@ const { h, validarIds } = require('./_helpers');
 
 validarIds(router);
 router.get('/', h(c.listar));
+router.get('/sku-sugerido', h(c.sugerirSku));
 router.get('/:id', h(c.obtener));
-router.post('/', authorize('ADMIN'), validate(v.producto), h(c.crear));
+router.post('/', authorize('ADMIN'), validate(v.productoNuevo), h(c.crear));
 router.put('/:id', authorize('ADMIN'), validate(v.producto), h(c.actualizar));
 router.patch('/:id/estado', authorize('ADMIN'), h(c.cambiarEstado));
 router.delete('/:id', authorize('ADMIN'), h(c.eliminar));
