@@ -12,14 +12,16 @@ const { siguienteNumero, q3, q4, paginacion } = require('../utils/helpers');
  */
 async function crear(data, user) {
   return withTransaction(async (client) => {
-    const prov = await client.query('SELECT id, activo FROM proveedores WHERE id = $1', [data.proveedor_id]);
-    if (!prov.rows[0]) throw AppError.badRequest('El proveedor no existe');
-    if (!prov.rows[0].activo) throw AppError.badRequest('El proveedor está inactivo');
+    if (data.proveedor_id) {
+      const prov = await client.query('SELECT id, activo FROM proveedores WHERE id = $1', [data.proveedor_id]);
+      if (!prov.rows[0]) throw AppError.badRequest('El proveedor no existe');
+      if (!prov.rows[0].activo) throw AppError.badRequest('El proveedor está inactivo');
+    }
     const alm = await client.query('SELECT id FROM almacenes WHERE id = $1 AND activo', [data.almacen_id]);
     if (!alm.rows[0]) throw AppError.badRequest('El almacén no existe o está inactivo');
 
     const numero = await siguienteNumero(client, 'entrada');
-    const cab = await entradaModel.insertCabecera(client, { ...data, numero, usuario_id: user.id });
+    const cab = await entradaModel.insertCabecera(client, { documento_ref: null, observaciones: null, proveedor_id: null, ...data, numero, usuario_id: user.id });
 
     let total = 0;
     const items = [...data.items].sort((a, b) => a.producto_id - b.producto_id);

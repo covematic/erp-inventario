@@ -7,11 +7,13 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Modal, { ConfirmDialog } from '../components/Modal';
 import { PageHeader, TableCard, SearchInput, LoadingBlock, ErrorBlock, EmptyState, Pagination, StockBadge, Badge, Field } from '../components/ui';
-import { fmtNum, fmtMoney } from '../utils/format';
+import { fmtNum, fmtMoney, hoy } from '../utils/format';
+import { CreacionRapida, EtiquetaConAccion, CAMPOS_CATEGORIA, CAMPOS_PROVEEDOR } from '../components/CreacionRapida';
 
 const VACIO = {
   sku: '', nombre: '', descripcion: '', categoria_id: '', proveedor_id: '', unidad_medida: 'UND',
   precio_compra: '', precio_venta: '', stock_minimo: '', activo: true,
+  stock_inicial: '', almacen_inicial_id: '',
 };
 const UNIDADES = ['UND', 'PAR', 'CAJA', 'ROLLO', 'GLN', 'KG', 'M', 'M2', 'LT', 'PQT', 'JGO'];
 
@@ -28,80 +30,10 @@ function validar(f, skuAuto) {
     if (f[k] === '' || f[k] === null) e[k] = `${label} es obligatorio`;
     else if (Number.isNaN(Number(f[k])) || Number(f[k]) < 0) e[k] = `${label} debe ser un número mayor o igual a 0`;
   }
-  return e;
-}
-
-/**
- * Mini formulario para crear una categoría o un proveedor sin salir del producto.
- * campos: [{ key, label, placeholder, validar(v) → mensaje|null }]
- */
-function CreacionRapida({ titulo, campos, endpoint, onCreado, onCancelar }) {
-  const toast = useToast();
-  const [v, setV] = useState(() => Object.fromEntries(campos.map((c) => [c.key, ''])));
-  const [errors, setErrors] = useState({});
-  const [saving, setSaving] = useState(false);
-
-  async function guardar() {
-    const e = {};
-    for (const c of campos) {
-      const msg = c.validar?.(v[c.key].trim());
-      if (msg) e[c.key] = msg;
-    }
-    setErrors(e);
-    if (Object.keys(e).length) return;
-    setSaving(true);
-    try {
-      const body = Object.fromEntries(campos.map((c) => [c.key, v[c.key].trim()]));
-      const { data } = await api.post(endpoint, body);
-      toast.success(`${titulo} creado(a)`);
-      onCreado(data);
-    } catch (err) {
-      setErrors(fieldErrors(err));
-      toast.error(errorMessage(err));
-    } finally {
-      setSaving(false);
-    }
+  if (f.stock_inicial !== '' && (Number.isNaN(Number(f.stock_inicial)) || Number(f.stock_inicial) < 0)) {
+    e.stock_inicial = 'Debe ser un número mayor o igual a 0';
   }
-
-  return (
-    <div className="mt-2 space-y-2 rounded-lg border border-brand-200 bg-brand-50/50 p-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">Nueva {titulo.toLowerCase()}</p>
-      {campos.map((c, i) => (
-        <div key={c.key}>
-          <input
-            autoFocus={i === 0}
-            className={`input ${errors[c.key] ? 'input-error' : ''}`}
-            placeholder={c.placeholder}
-            value={v[c.key]}
-            onChange={(e) => setV({ ...v, [c.key]: e.target.value })}
-            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); guardar(); } }}
-          />
-          {errors[c.key] && <p className="mt-1 text-xs text-red-600">{errors[c.key]}</p>}
-        </div>
-      ))}
-      <div className="flex justify-end gap-2">
-        <button type="button" className="btn-ghost btn-sm" onClick={onCancelar}>Cancelar</button>
-        <button type="button" className="btn-primary btn-sm" onClick={guardar} disabled={saving}>{saving ? 'Guardando…' : 'Crear y usar'}</button>
-      </div>
-    </div>
-  );
-}
-
-const CAMPOS_CATEGORIA = [
-  { key: 'nombre', placeholder: 'Nombre de la categoría (ej. Herramientas)', validar: (x) => (!x ? 'Escriba el nombre' : null) },
-];
-const CAMPOS_PROVEEDOR = [
-  { key: 'razon_social', placeholder: 'Razón social', validar: (x) => (!x ? 'Escriba la razón social' : null) },
-  { key: 'ruc', placeholder: 'RUC (solo números)', validar: (x) => (!/^\d{8,20}$/.test(x) ? 'El RUC debe tener solo dígitos (8 a 20)' : null) },
-];
-
-function EtiquetaConAccion({ label, required, accion, onAccion }) {
-  return (
-    <div className="mb-1 flex items-center justify-between">
-      <span className="text-sm font-medium text-slate-700">{label} {required && <span className="text-red-500">*</span>}</span>
-      {accion && <button type="button" onClick={onAccion} className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-800"><Plus className="h-3.5 w-3.5" /> {accion}</button>}
-    </div>
-  );
+  return e;
 }
 
 function ProductoForm({ open, producto, categorias, proveedores, onCategoriaCreada, onProveedorCreado, onClose, onSaved }) {
@@ -114,6 +46,7 @@ function ProductoForm({ open, producto, categorias, proveedores, onCategoriaCrea
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const editando = !!producto;
+  const { data: almacenes } = useFetch('/almacenes', { activo: 'true' }, { enabled: open && !producto });
 
   useEffect(() => {
     if (!open) return;
@@ -151,6 +84,11 @@ function ProductoForm({ open, producto, categorias, proveedores, onCategoriaCrea
       proveedor_id: f.proveedor_id ? Number(f.proveedor_id) : null, unidad_medida: f.unidad_medida,
       precio_compra: Number(f.precio_compra), precio_venta: Number(f.precio_venta), stock_minimo: Number(f.stock_minimo), activo: f.activo,
       ...(usaAuto ? {} : { sku: f.sku.trim() }),
+      ...(editando ? {} : {
+        stock_inicial: Number(f.stock_inicial) || 0,
+        almacen_inicial_id: f.almacen_inicial_id ? Number(f.almacen_inicial_id) : null,
+        fecha_inicial: hoy(),
+      }),
     };
     try {
       if (editando) {
@@ -158,7 +96,9 @@ function ProductoForm({ open, producto, categorias, proveedores, onCategoriaCrea
         toast.success('Producto actualizado');
       } else {
         const { data } = await api.post('/productos', body);
-        toast.success(`Producto registrado con el código ${data.sku}`);
+        toast.success(Number(body.stock_inicial) > 0
+          ? `Producto ${data.sku} registrado con ${fmtNum(body.stock_inicial)} ${data.unidad_medida} de stock inicial`
+          : `Producto registrado con el código ${data.sku}`);
       }
       onSaved();
     } catch (err) {
@@ -258,6 +198,33 @@ function ProductoForm({ open, producto, categorias, proveedores, onCategoriaCrea
             <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-brand-600" checked={f.activo} onChange={set('activo')} /> Producto activo
           </label>
         </Field>
+
+        {!editando && (
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 sm:col-span-2">
+            <p className="text-sm font-semibold text-emerald-900">Stock inicial</p>
+            <p className="mb-3 text-xs text-emerald-800/80">
+              Cantidad que ya tiene en el almacén. Se registra como entrada «Inventario inicial», valorizada al precio de compra, y aparece en el Kardex. Déjelo vacío si aún no hay unidades.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Cantidad existente" error={errors.stock_inicial}>
+                <div className="relative">
+                  <input type="number" min="0" step="any" placeholder="0" className={`input pr-16 ${errors.stock_inicial ? 'input-error' : ''}`} value={f.stock_inicial} onChange={set('stock_inicial')} />
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">{f.unidad_medida}</span>
+                </div>
+              </Field>
+              {almacenes?.length > 1 && (
+                <Field label="Almacén">
+                  <select className="input" value={f.almacen_inicial_id || almacenes[0].id} onChange={set('almacen_inicial_id')}>
+                    {almacenes.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
+                  </select>
+                </Field>
+              )}
+            </div>
+            {Number(f.stock_inicial) > 0 && Number(f.precio_compra) > 0 && (
+              <p className="mt-2 text-xs text-emerald-900">Valor del stock inicial: <b>{fmtMoney(Number(f.stock_inicial) * Number(f.precio_compra))}</b></p>
+            )}
+          </div>
+        )}
       </form>
     </Modal>
   );

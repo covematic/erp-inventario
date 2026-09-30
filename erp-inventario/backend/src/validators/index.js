@@ -33,6 +33,12 @@ const producto = z.object(productoCampos);
 const productoNuevo = z.object({
   ...productoCampos,
   sku: z.preprocess((v) => (typeof v === 'string' && v.trim() === '' ? undefined : v), skuManual.optional()),
+  // Cantidad que ya existe físicamente al registrar el producto (se registra como entrada)
+  stock_inicial: z.preprocess((v) => (v === '' || v === null || v === undefined ? 0 : v),
+    z.coerce.number({ invalid_type_error: 'El stock inicial debe ser un número' })
+      .min(0, 'El stock inicial no puede ser negativo').max(999999999, 'El stock inicial es demasiado grande')),
+  almacen_inicial_id: idOpcional,
+  fecha_inicial: fechaOpcional,
 });
 
 const categoria = z.object({
@@ -81,7 +87,7 @@ const lineasUnicas = (lineas) => new Set(lineas.map((l) => l.producto_id)).size 
 const entrada = z.object({
   fecha: fecha(),
   documento_ref: textoOpcional(60),
-  proveedor_id: id('El proveedor'),
+  proveedor_id: idOpcional,
   almacen_id: id('El almacén'),
   observaciones: textoOpcional(2000),
   items: z.array(z.object({

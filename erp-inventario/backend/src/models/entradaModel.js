@@ -50,7 +50,7 @@ const SELECT = `
          ua.nombre AS anulado_por_nombre,
          (SELECT COUNT(*)::int FROM detalle_entradas d WHERE d.entrada_id = e.id) AS items
     FROM entradas e
-    JOIN proveedores pr ON pr.id = e.proveedor_id
+    LEFT JOIN proveedores pr ON pr.id = e.proveedor_id
     JOIN almacenes a ON a.id = e.almacen_id
     JOIN usuarios u ON u.id = e.usuario_id
     LEFT JOIN usuarios ua ON ua.id = e.anulado_por`;
@@ -63,7 +63,7 @@ async function list(f, { limit, offset }) {
     .add('e.estado = ?', f.estado)
     .add('(e.numero ILIKE ? OR e.documento_ref ILIKE ? OR pr.razon_social ILIKE ?)', f.q ? `%${f.q}%` : null);
   const where = w.where();
-  const total = await query(`SELECT COUNT(*)::int AS n FROM entradas e JOIN proveedores pr ON pr.id = e.proveedor_id ${where}`, w.params);
+  const total = await query(`SELECT COUNT(*)::int AS n FROM entradas e LEFT JOIN proveedores pr ON pr.id = e.proveedor_id ${where}`, w.params);
   const data = await query(`${SELECT} ${where} ORDER BY e.id DESC LIMIT ${w.next(limit)} OFFSET ${w.next(offset)}`, w.params);
   return { data: data.rows, total: total.rows[0].n };
 }

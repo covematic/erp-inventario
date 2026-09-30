@@ -118,7 +118,7 @@ CREATE TABLE entradas (
   numero           VARCHAR(20) NOT NULL UNIQUE,
   documento_ref    VARCHAR(60),               -- factura / guía de remisión del proveedor
   fecha            DATE NOT NULL,
-  proveedor_id     INT NOT NULL REFERENCES proveedores(id) ON DELETE RESTRICT,
+  proveedor_id     INT REFERENCES proveedores(id) ON DELETE RESTRICT,  -- opcional: inventario inicial u otros ingresos
   almacen_id       INT NOT NULL REFERENCES almacenes(id) ON DELETE RESTRICT,
   usuario_id       INT NOT NULL REFERENCES usuarios(id) ON DELETE RESTRICT,
   estado           VARCHAR(20) NOT NULL DEFAULT 'CONFIRMADA' CHECK (estado IN ('CONFIRMADA','ANULADA')),

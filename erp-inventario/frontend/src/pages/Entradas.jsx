@@ -8,13 +8,15 @@ import Modal, { ConfirmDialog } from '../components/Modal';
 import ProductSelect from '../components/ProductSelect';
 import { PageHeader, TableCard, SearchInput, LoadingBlock, ErrorBlock, EmptyState, Pagination, EstadoBadge, Field, DetailItem } from '../components/ui';
 import { fmtNum, fmtMoney, fmtDate, fmtDateTime, hoy } from '../utils/format';
+import { CreacionRapida, EtiquetaConAccion, CAMPOS_PROVEEDOR } from '../components/CreacionRapida';
 
 let k = 1;
 const linea = () => ({ key: k++, producto_id: null, cantidad: '', costo_unitario: '' });
 
 function EntradaForm({ open, onClose, onSaved }) {
   const toast = useToast();
-  const { data: proveedores } = useFetch('/proveedores', { activo: 'true' }, { enabled: open });
+  const { data: proveedores, setData: setProveedores } = useFetch('/proveedores', { activo: 'true' }, { enabled: open });
+  const [nuevoProv, setNuevoProv] = useState(false);
   const { data: almacenes } = useFetch('/almacenes', { activo: 'true' }, { enabled: open });
   const { data: productos } = useFetch('/productos', { activo: 'true', limit: 1000 }, { enabled: open });
   const [f, setF] = useState({});
@@ -27,6 +29,7 @@ function EntradaForm({ open, onClose, onSaved }) {
     setF({ fecha: hoy(), documento_ref: '', proveedor_id: '', almacen_id: '', observaciones: '' });
     setLineas([linea()]);
     setErrors({});
+    setNuevoProv(false);
   }, [open]);
   useEffect(() => {
     if (open && almacenes?.length && !f.almacen_id) setF((x) => ({ ...x, almacen_id: String(almacenes[0].id) }));
@@ -40,7 +43,6 @@ function EntradaForm({ open, onClose, onSaved }) {
   async function submit() {
     const e = {};
     if (!f.fecha) e.fecha = 'La fecha es obligatoria';
-    if (!f.proveedor_id) e.proveedor_id = 'Seleccione el proveedor';
     if (!f.almacen_id) e.almacen_id = 'Seleccione el almacén';
     const usadas = lineas.filter((l) => l.producto_id || l.cantidad || l.costo_unitario);
     if (!usadas.length) e.items = 'Agregue al menos un producto';
@@ -54,7 +56,7 @@ function EntradaForm({ open, onClose, onSaved }) {
     setSaving(true);
     try {
       const { data } = await api.post('/entradas', {
-        ...f, proveedor_id: Number(f.proveedor_id), almacen_id: Number(f.almacen_id),
+        ...f, proveedor_id: f.proveedor_id ? Number(f.proveedor_id) : null, almacen_id: Number(f.almacen_id),
         items: usadas.map((l) => ({ producto_id: l.producto_id, cantidad: Number(l.cantidad), costo_unitario: Number(l.costo_unitario) })),
       });
       toast.success(data.message);
@@ -76,20 +78,28 @@ function EntradaForm({ open, onClose, onSaved }) {
       </>}>
       <div className="grid gap-4 sm:grid-cols-4">
         <Field label="Fecha" required error={errors.fecha}><input type="date" className="input" value={f.fecha || ''} max={hoy()} onChange={set('fecha')} /></Field>
-        <Field label="Proveedor" required error={errors.proveedor_id} className="sm:col-span-2">
-          <select className={`input ${errors.proveedor_id ? 'input-error' : ''}`} value={f.proveedor_id || ''} onChange={(e) => {
-            set('proveedor_id')(e);
-          }}>
-            <option value="">Seleccione…</option>
+        <div className="sm:col-span-2">
+          <EtiquetaConAccion label="Proveedor" accion={!nuevoProv && 'Nuevo'} onAccion={() => setNuevoProv(true)} />
+          <select className="input" value={f.proveedor_id || ''} onChange={set('proveedor_id')}>
+            <option value="">Sin proveedor (inventario inicial u otro ingreso)</option>
             {proveedores?.map((p) => <option key={p.id} value={p.id}>{p.razon_social} · {p.ruc}</option>)}
           </select>
-        </Field>
+          {nuevoProv && (
+            <CreacionRapida titulo="Proveedor" endpoint="/proveedores" campos={CAMPOS_PROVEEDOR}
+              onCancelar={() => setNuevoProv(false)}
+              onCreado={(p) => {
+                setProveedores((l) => [...(l || []), p].sort((a, b) => a.razon_social.localeCompare(b.razon_social)));
+                setF((x) => ({ ...x, proveedor_id: String(p.id) }));
+                setNuevoProv(false);
+              }} />
+          )}
+        </div>
         <Field label="Almacén" required error={errors.almacen_id}>
           <select className="input" value={f.almacen_id || ''} onChange={set('almacen_id')}>
             {almacenes?.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
           </select>
         </Field>
-        <Field label="Documento del proveedor" hint="Factura o guía de remisión">
+        <Field label="Documento" hint="Factura, guía de remisión o referencia">
           <input className="input" value={f.documento_ref || ''} onChange={set('documento_ref')} placeholder="F001-000123" />
         </Field>
         <Field label="Observaciones" className="sm:col-span-3"><input className="input" value={f.observaciones || ''} onChange={set('observaciones')} /></Field>
@@ -151,7 +161,7 @@ function EntradaDetalle({ id, onClose, onChanged }) {
   }
 
   return (
-    <Modal open={!!id} onClose={onClose} size="lg" title={e ? `Entrada ${e.numero}` : 'Entrada'} subtitle={e?.proveedor_nombre}
+    <Modal open={!!id} onClose={onClose} size="lg" title={e ? `Entrada ${e.numero}` : 'Entrada'} subtitle={e ? (e.proveedor_nombre || e.documento_ref || 'Sin proveedor') : ''}
       footer={e && e.estado !== 'ANULADA' && can('SUPERVISOR') && <button className="btn-danger" onClick={() => setAnular(true)}><Ban className="h-4 w-4" /> Anular entrada</button>}>
       {loading || !e ? <LoadingBlock /> : (
         <div className="space-y-5">
@@ -227,7 +237,7 @@ export default function Entradas() {
                 <tr key={e.id} className="cursor-pointer" onClick={() => setVer(e.id)}>
                   <td className="font-mono text-xs font-medium text-slate-900">{e.numero}</td>
                   <td className="whitespace-nowrap">{fmtDate(e.fecha)}</td>
-                  <td className="max-w-[220px] truncate">{e.proveedor_nombre}</td>
+                  <td className="max-w-[220px] truncate">{e.proveedor_nombre || <span className="text-slate-400">Sin proveedor</span>}</td>
                   <td className="whitespace-nowrap text-slate-500">{e.documento_ref || '—'}</td>
                   <td className="whitespace-nowrap">{e.almacen_nombre}</td>
                   <td className="num">{e.items}</td>

@@ -36,7 +36,42 @@ async function sugerirSku(categoriaId) {
   return `${pre}-${String(r.rows[0].n).padStart(4, '0')}`;
 }
 
-async function crear(data) {
+/**
+ * Registra la cantidad que ya existía físicamente como una entrada "Inventario inicial",
+ * para que quede en el Kardex. Si falla, el producto recién creado se elimina.
+ */
+async function cargarStockInicial(producto, data, user) {
+  const cantidad = Number(data.stock_inicial) || 0;
+  if (cantidad <= 0) return producto;
+  let almacenId = data.almacen_inicial_id;
+  if (!almacenId) {
+    const a = await query('SELECT id FROM almacenes WHERE activo ORDER BY id LIMIT 1');
+    almacenId = a.rows[0]?.id;
+  }
+  try {
+    if (!almacenId) throw AppError.badRequest('No hay almacenes activos para registrar el stock inicial');
+    const entradaService = require('./entradaService');
+    await entradaService.crear({
+      fecha: data.fecha_inicial || new Date().toISOString().slice(0, 10),
+      documento_ref: 'INVENTARIO INICIAL',
+      proveedor_id: null,
+      almacen_id: almacenId,
+      observaciones: 'Stock existente al registrar el producto',
+      items: [{ producto_id: producto.id, cantidad, costo_unitario: Number(data.precio_compra) || 0 }],
+    }, user);
+  } catch (err) {
+    await productoModel.remove(producto.id);
+    throw err;
+  }
+  return productoModel.findById(producto.id);
+}
+
+async function crear(data, user) {
+  const p = await crearSoloProducto(data);
+  return cargarStockInicial(p, data, user);
+}
+
+async function crearSoloProducto(data) {
   if (data.sku) {
     const id = await productoModel.create(data);
     return productoModel.findById(id);
