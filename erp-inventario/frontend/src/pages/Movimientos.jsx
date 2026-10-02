@@ -26,9 +26,10 @@ export default function Movimientos() {
     <>
       <PageHeader title="Historial de movimientos" subtitle="Entradas, salidas, devoluciones, ajustes y anulaciones de todos los productos" />
       <TableCard
-        toolbar={<div className="grid w-full gap-2 sm:grid-cols-2 lg:grid-cols-7">
+        onLimpiar={limpiar}
+        toolbar={<>
           <SearchInput value={documento} onChange={setDocumento} placeholder="N° documento" />
-          <select aria-label="Filtrar por producto" className="input lg:col-span-2" value={producto} onChange={(e) => setProducto(e.target.value)}>
+          <select aria-label="Filtrar por producto" className="input lg:w-64" value={producto} onChange={(e) => setProducto(e.target.value)}>
             <option value="">Todos los productos</option>
             {productos?.data.map((p) => <option key={p.id} value={p.id}>{p.sku} · {p.nombre}</option>)}
           </select>
@@ -40,15 +41,15 @@ export default function Movimientos() {
             <option value="">Todos los usuarios</option>
             {usuarios?.map((u) => <option key={u.id} value={u.id}>{u.nombre}</option>)}
           </select>
-          <input type="date" className="input" value={desde} onChange={(e) => setDesde(e.target.value)} aria-label="Desde" title="Desde" />
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <input type="date" className="input" value={desde} onChange={(e) => setDesde(e.target.value)} aria-label="Desde" title="Desde" />
+            <span aria-hidden="true" className="text-slate-500">–</span>
             <input type="date" className="input" value={hasta} onChange={(e) => setHasta(e.target.value)} aria-label="Hasta" title="Hasta" />
-            <button className="btn-ghost btn-sm" onClick={limpiar}>Limpiar</button>
           </div>
-        </div>}
+        </>}
         footer={data && <Pagination page={page} limit={data.limit} total={data.total} onPage={setPage} />}
       >
-        {loading && !data ? <LoadingBlock /> : error ? <ErrorBlock message={error} onRetry={reload} /> : data.data.length === 0 ? <EmptyState /> : (
+        {loading && !data ? <LoadingBlock /> : error ? <ErrorBlock message={error} onRetry={reload} /> : data.data.length === 0 ? <EmptyState title="Sin movimientos" text="Cada entrada, salida, devolución, ajuste o anulación quedará registrada aquí con su usuario y fecha." /> : (
           <table className="table-base">
             <thead><tr><th>Fecha</th><th>Tipo</th><th>Documento</th><th>Producto</th><th>Almacén</th><th className="num">Entrada</th><th className="num">Salida</th><th className="num">Devolución</th><th className="num">Saldo</th><th className="num">Valor</th><th>Usuario</th></tr></thead>
             <tbody className="divide-y divide-slate-100">

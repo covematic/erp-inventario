@@ -105,13 +105,16 @@ export default function Catalogos() {
       <div className="mb-4 flex gap-1 overflow-x-auto border-b border-slate-200">
         {Object.entries(CONFIG).map(([k, c]) => (
           <button key={k} onClick={() => { setTabla(k); setQ(''); }}
-            className={`whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium ${tabla === k ? 'border-brand-600 text-brand-700' : 'border-transparent text-slate-500 hover:text-slate-800'}`}>
+            className={`min-h-[44px] whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium ${tabla === k ? 'border-brand-600 text-brand-700' : 'border-transparent text-slate-500 hover:text-slate-800'}`}>
             {c.titulo}
           </button>
         ))}
       </div>
       <TableCard toolbar={<SearchInput value={q} onChange={setQ} className="lg:w-80" />}>
-        {loading && !data ? <LoadingBlock /> : error ? <ErrorBlock message={error} onRetry={reload} /> : data.length === 0 ? <EmptyState /> : (
+        {loading && !data ? <LoadingBlock /> : error ? <ErrorBlock message={error} onRetry={reload} /> : data.length === 0 ? (q
+          ? <EmptyState title="Sin coincidencias" text="Pruebe con otra búsqueda." />
+          : <EmptyState title={`Aún no hay ${cfg.titulo.toLowerCase()}`} text="Puede crearlos aquí o directamente desde los formularios de productos y entradas con «+ Nuevo»."
+              action={esAdmin && <button className="btn-primary" onClick={() => setForm({ open: true, registro: null })}><Plus aria-hidden="true" className="h-4 w-4" /> Nuevo(a) {cfg.singular}</button>} />) : (
           <table className="table-base">
             <thead><tr>{cfg.campos.map((c) => <th key={c.key}>{c.label}</th>)}<th>Estado</th>{esAdmin && <th></th>}</tr></thead>
             <tbody className="divide-y divide-slate-100">

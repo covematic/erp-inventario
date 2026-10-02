@@ -18,6 +18,7 @@
   .card { @apply bg-white rounded-md border border-slate-200 shadow-card; }
   .btn { @apply inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap; }
   /* Acción principal: viga naranja con texto grafito (contraste 7:1) */
+  .btn svg { flex-shrink: 0; }
   .btn-primary { @apply btn bg-beam-500 text-slate-900 hover:bg-beam-400 active:bg-beam-600; }
   .btn-secondary { @apply btn bg-white text-slate-800 border border-slate-300 hover:bg-slate-50; }
   .btn-danger { @apply btn bg-red-700 text-white hover:bg-red-800; }

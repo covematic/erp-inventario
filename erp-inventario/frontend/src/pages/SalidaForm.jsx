@@ -5,6 +5,7 @@ import api, { errorMessage, fieldErrors } from '../api/client';
 import useFetch from '../hooks/useFetch';
 import { useToast } from '../context/ToastContext';
 import ProductSelect from '../components/ProductSelect';
+import CantidadInput from '../components/CantidadInput';
 import { ConfirmDialog } from '../components/Modal';
 import { PageHeader, Field, LoadingBlock } from '../components/ui';
 import { fmtNum, hoy, MOTIVOS_SALIDA } from '../utils/format';
@@ -32,7 +33,12 @@ export default function SalidaForm() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (almacenes?.length && !f.almacen_id) setF((x) => ({ ...x, almacen_id: String(almacenes[0].id) }));
+    if (almacenes?.length && !f.almacen_id) {
+      let ultimo = null;
+      try { ultimo = localStorage.getItem('erp_ultimo_almacen'); } catch { /* sin almacenamiento */ }
+      const existe = almacenes.find((a) => String(a.id) === ultimo);
+      setF((x) => ({ ...x, almacen_id: existe ? ultimo : String(almacenes[0].id) }));
+    }
   }, [almacenes, f.almacen_id]);
 
   // Stock disponible en el almacén seleccionado
@@ -105,6 +111,7 @@ export default function SalidaForm() {
     };
     try {
       const { data } = await api.post('/salidas', body);
+      try { localStorage.setItem('erp_ultimo_almacen', String(body.almacen_id)); } catch { /* sin almacenamiento */ }
       toast.success(data.message);
       navigate('/salidas', { state: { abrir: data.id } });
     } catch (err) {
@@ -209,7 +216,7 @@ export default function SalidaForm() {
               <h2 className="font-semibold text-slate-900">Productos requeridos</h2>
               <p className="text-xs text-slate-500">El stock mostrado corresponde al almacén seleccionado</p>
             </div>
-            <button className="btn-secondary btn-sm" onClick={() => setLineas((l) => [...l, nuevaLinea()])}><Plus className="h-4 w-4" /> Agregar</button>
+            <button className="btn-secondary btn-sm shrink-0" onClick={() => setLineas((l) => [...l, nuevaLinea()])}><Plus aria-hidden="true" className="h-4 w-4" /> Agregar producto</button>
           </div>
           {errors.items && <p className="mx-5 mt-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{errors.items}</p>}
           <div className="flex-1 space-y-3 p-5">
@@ -227,11 +234,14 @@ export default function SalidaForm() {
                     {errors[`linea_${l.key}_producto`] && <p className="mt-1 text-xs text-red-600">{errors[`linea_${l.key}_producto`]}</p>}
                   </div>
                   <div className="col-span-7 sm:col-span-3">
-                    <div className="relative">
-                      <input type="number" aria-label="Cantidad requerida" min="0" step="any" className={`input pr-14 text-right ${errors[`linea_${l.key}_cantidad`] || excede ? 'input-error' : ''}`}
-                        value={l.cantidad} placeholder="0" onChange={(e) => setLinea(l.key, { cantidad: e.target.value })} />
-                      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500">{prod?.unidad_medida}</span>
-                    </div>
+                    <CantidadInput
+                      value={l.cantidad}
+                      unidad={prod?.unidad_medida}
+                      max={disp ?? undefined}
+                      etiqueta={prod ? `Cantidad de ${prod.nombre}` : 'Cantidad requerida'}
+                      invalido={!!errors[`linea_${l.key}_cantidad`] || excede}
+                      onChange={(v) => setLinea(l.key, { cantidad: v })}
+                    />
                     {disp !== null && (
                       <p className={`mt-1 text-xs ${excede ? 'font-medium text-red-600' : 'text-slate-500'}`}>
                         {excede && <AlertTriangle className="mr-1 inline h-3 w-3" />}

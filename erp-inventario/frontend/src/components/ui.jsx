@@ -1,14 +1,31 @@
-import { Children, cloneElement, isValidElement, useId } from 'react';
-import { Loader2, Inbox, ChevronLeft, ChevronRight, Search, AlertCircle } from 'lucide-react';
+import { Children, Fragment, cloneElement, isValidElement, useEffect, useId, useState } from 'react';
+import { Loader2, Inbox, SlidersHorizontal, X, ChevronLeft, ChevronRight, Search, AlertCircle } from 'lucide-react';
 
 export function Spinner({ className = 'h-5 w-5' }) {
   return <Loader2 className={`animate-spin text-brand-600 ${className}`} />;
 }
 
+/** Avisa cuando la espera se alarga (el servidor gratuito se duerme tras 15 min sin uso). */
+export function useEsperaLarga(activa, ms = 4000) {
+  const [larga, setLarga] = useState(false);
+  useEffect(() => {
+    if (!activa) { setLarga(false); return undefined; }
+    const t = setTimeout(() => setLarga(true), ms);
+    return () => clearTimeout(t);
+  }, [activa, ms]);
+  return larga;
+}
+
 export function LoadingBlock({ label = 'Cargando…' }) {
+  const larga = useEsperaLarga(true);
   return (
-    <div className="flex items-center justify-center gap-2 py-16 text-sm text-slate-500">
-      <Spinner /> {label}
+    <div role="status" className="flex flex-col items-center justify-center gap-2 px-4 py-16 text-center text-sm text-slate-500">
+      <div className="flex items-center gap-2"><Spinner /> {label}</div>
+      {larga && (
+        <p className="max-w-xs text-xs text-slate-500">
+          El sistema se está activando. La primera vez del día puede tardar hasta un minuto; no cierre la página.
+        </p>
+      )}
     </div>
   );
 }
@@ -23,10 +40,10 @@ export function ErrorBlock({ message, onRetry }) {
   );
 }
 
-export function EmptyState({ title = 'Sin resultados', text, action }) {
+export function EmptyState({ title = 'Sin resultados', text, action, icon: Icon = Inbox }) {
   return (
-    <div className="flex flex-col items-center gap-2 py-14 text-center">
-      <Inbox className="h-9 w-9 text-slate-300" />
+    <div className="flex flex-col items-center gap-2 px-4 py-14 text-center">
+      <Icon aria-hidden="true" className="h-9 w-9 text-slate-400" />
       <p className="font-medium text-slate-700">{title}</p>
       {text && <p className="max-w-sm text-sm text-slate-500">{text}</p>}
       {action && <div className="mt-2">{action}</div>}
@@ -194,10 +211,56 @@ export function StatCard({ label, value, icon: Icon, tone = 'blue', hint, onClic
 }
 
 /** Contenedor de tabla con scroll horizontal en pantallas pequeñas. */
-export function TableCard({ children, toolbar, footer }) {
+/** Cuenta los filtros con valor (select, fechas) dentro de un elemento, para el contador del botón Filtros. */
+function contarActivos(nodo) {
+  if (!isValidElement(nodo)) return 0;
+  const { value, children } = nodo.props;
+  const predeterminado = nodo.props['data-predeterminado'];
+  if ((nodo.type === 'select' || nodo.type === 'input') && value !== '' && value !== undefined && value !== null && value !== predeterminado) return 1;
+  return Children.toArray(children).reduce((a, h) => a + contarActivos(h), 0);
+}
+
+/** Barra de búsqueda y filtros sobre una tabla. En el celular los filtros se pliegan para que la lista se vea primero. */
+function Toolbar({ toolbar, onLimpiar }) {
+  const [abierto, setAbierto] = useState(false);
+  const id = useId();
+  const items = toolbar?.type === Fragment ? Children.toArray(toolbar.props.children) : [toolbar];
+  const [busqueda, ...filtros] = items;
+  const activos = filtros.reduce((a, f) => a + contarActivos(f), 0);
+  return (
+    <div className="flex flex-col gap-2 rounded-md border border-slate-200 bg-white p-3 max-md:mb-1 md:rounded-none md:border-0 md:border-b lg:flex-row lg:items-center">
+      <div className="flex items-center gap-2 lg:contents">
+        <div className="min-w-0 flex-1 lg:flex-none">{busqueda}</div>
+        {filtros.length > 0 && (
+          <button
+            type="button"
+            className="btn-secondary shrink-0 md:hidden"
+            aria-expanded={abierto}
+            aria-controls={id}
+            onClick={() => setAbierto((v) => !v)}
+          >
+            <SlidersHorizontal aria-hidden="true" className="h-4 w-4" />
+            Filtros
+            {activos > 0 && <span className="rounded-full bg-brand-600 px-1.5 text-xs font-semibold text-white">{activos}<span className="sr-only"> activos</span></span>}
+          </button>
+        )}
+      </div>
+      {filtros.length > 0 && (
+        <div id={id} className={`${abierto ? 'flex' : 'hidden'} flex-col gap-2 md:flex lg:contents`}>
+          {filtros}
+          {activos > 0 && onLimpiar && (
+            <button type="button" className="btn-ghost text-sm" onClick={onLimpiar}><X aria-hidden="true" className="h-4 w-4" /> Limpiar filtros</button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function TableCard({ children, toolbar, footer, onLimpiar }) {
   return (
     <div className="overflow-hidden max-md:bg-transparent md:card">
-      {toolbar && <div className="flex flex-col gap-2 rounded-md border border-slate-200 bg-white p-3 max-md:mb-1 md:rounded-none md:border-0 md:border-b lg:flex-row lg:items-center">{toolbar}</div>}
+      {toolbar && <Toolbar toolbar={toolbar} onLimpiar={onLimpiar} />}
       <div className="overflow-x-auto">{children}</div>
       {footer}
     </div>

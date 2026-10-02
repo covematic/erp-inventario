@@ -13,7 +13,7 @@ import { ROLES } from '../utils/format';
 
 const NAV = [
   { section: 'General' },
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/', label: 'Inicio', icon: LayoutDashboard, end: true },
   { to: '/alertas', label: 'Alertas', icon: Bell, badge: true },
   { section: 'Operaciones' },
   { to: '/entradas', label: 'Entradas', icon: PackagePlus },

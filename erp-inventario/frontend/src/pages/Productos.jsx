@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { Plus, Pencil, Trash2, Power, BookOpen } from 'lucide-react';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import { Plus, Pencil, Trash2, Power, BookOpen, Package } from 'lucide-react';
 import api, { errorMessage, fieldErrors } from '../api/client';
 import useFetch, { useDebounce } from '../hooks/useFetch';
 import { useAuth } from '../context/AuthContext';
@@ -244,7 +244,8 @@ export default function Productos() {
   const { data, loading, error, reload } = useFetch('/productos', { q: dq, categoria_id: categoria, estado_stock: estadoStock, activo, page, limit: 15 });
   const { data: categorias, setData: setCategorias } = useFetch('/categorias');
   const { data: proveedores, setData: setProveedores } = useFetch('/proveedores');
-  const [form, setForm] = useState({ open: false, producto: null });
+  const location = useLocation();
+  const [form, setForm] = useState({ open: !!location.state?.nuevo, producto: null });
   const [borrar, setBorrar] = useState(null);
   const [busy, setBusy] = useState(false);
 
@@ -277,8 +278,9 @@ export default function Productos() {
         actions={esAdmin && <button className="btn-primary" onClick={() => setForm({ open: true, producto: null })}><Plus className="h-4 w-4" /> Nuevo producto</button>}
       />
       <TableCard
+        onLimpiar={() => { setCategoria(''); setEstadoStock(''); setActivo('true'); }}
         toolbar={<>
-          <SearchInput value={q} onChange={setQ} placeholder="Buscar por SKU, nombre o descripción" className="lg:w-80" />
+          <SearchInput value={q} onChange={setQ} placeholder="SKU o nombre" className="lg:w-80" />
           <select aria-label="Filtrar por categoría" className="input lg:w-52" value={categoria} onChange={(e) => setCategoria(e.target.value)}>
             <option value="">Todas las categorías</option>
             {categorias?.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
@@ -289,7 +291,7 @@ export default function Productos() {
             <option value="BAJO">Stock bajo</option>
             <option value="AGOTADO">Agotados</option>
           </select>
-          <select aria-label="Mostrar productos activos o inactivos" className="input lg:w-36" value={activo} onChange={(e) => setActivo(e.target.value)}>
+          <select aria-label="Mostrar productos activos o inactivos" data-predeterminado="true" className="input lg:w-36" value={activo} onChange={(e) => setActivo(e.target.value)}>
             <option value="true">Activos</option>
             <option value="false">Inactivos</option>
             <option value="">Todos</option>
@@ -298,7 +300,13 @@ export default function Productos() {
         footer={data && <Pagination page={page} limit={data.limit} total={data.total} onPage={setPage} />}
       >
         {loading && !data ? <LoadingBlock /> : error ? <ErrorBlock message={error} onRetry={reload} /> : data.data.length === 0 ? (
-          <EmptyState text="Ajuste los filtros o registre un producto nuevo." />
+          (q || categoria || estadoStock || activo !== 'true') ? (
+            <EmptyState title="Ningún producto coincide" text="Pruebe con otra búsqueda o limpie los filtros."
+              action={<button className="btn-secondary" onClick={() => { setQ(''); setCategoria(''); setEstadoStock(''); setActivo('true'); }}>Limpiar filtros</button>} />
+          ) : (
+            <EmptyState icon={Package} title="Aún no hay productos" text="Registre su primer producto. Si ya tiene unidades en el almacén, indíquelas en «Stock inicial» y quedarán en el Kardex."
+              action={esAdmin && <button className="btn-primary" onClick={() => setForm({ open: true, producto: null })}><Plus aria-hidden="true" className="h-4 w-4" /> Nuevo producto</button>} />
+          )
         ) : (
           <table className="table-base">
             <thead>

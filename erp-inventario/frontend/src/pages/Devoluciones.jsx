@@ -192,7 +192,7 @@ export default function Devoluciones() {
   const [desde, setDesde] = useState('');
   const [hasta, setHasta] = useState('');
   const [page, setPage] = useState(1);
-  const [form, setForm] = useState({ open: !!location.state?.salidaId, salidaId: location.state?.salidaId || null });
+  const [form, setForm] = useState({ open: !!(location.state?.salidaId || location.state?.nuevo), salidaId: location.state?.salidaId || null });
   const [ver, setVer] = useState(null);
   const dq = useDebounce(q);
   const { data, loading, error, reload } = useFetch('/devoluciones', { q: dq, estado_producto: estado, desde, hasta, page, limit: 15 });
@@ -207,6 +207,7 @@ export default function Devoluciones() {
         actions={can('ALMACEN') && <button className="btn-primary" onClick={() => setForm({ open: true, salidaId: null })}><Plus className="h-4 w-4" /> Nueva devolución</button>}
       />
       <TableCard
+        onLimpiar={() => { setEstado(''); setDesde(''); setHasta(''); }}
         toolbar={<>
           <SearchInput value={q} onChange={setQ} placeholder="N° devolución, guía, proyecto o responsable" className="lg:w-80" />
           <select aria-label="Filtrar por estado" className="input lg:w-48" value={estado} onChange={(e) => setEstado(e.target.value)}>
@@ -220,7 +221,10 @@ export default function Devoluciones() {
         </>}
         footer={data && <Pagination page={page} limit={data.limit} total={data.total} onPage={setPage} />}
       >
-        {loading && !data ? <LoadingBlock /> : error ? <ErrorBlock message={error} onRetry={reload} /> : data.data.length === 0 ? <EmptyState /> : (
+        {loading && !data ? <LoadingBlock /> : error ? <ErrorBlock message={error} onRetry={reload} /> : data.data.length === 0 ? ((q || estado || desde || hasta)
+          ? <EmptyState title="Ninguna devolución coincide" text="Pruebe con otra búsqueda, estado o rango de fechas." />
+          : <EmptyState icon={Undo2} title="No hay devoluciones registradas" text="Cuando un proyecto o área devuelva material, regístrelo aquí indicando si vuelve bueno, dañado o defectuoso."
+              action={can('ALMACEN') && <button className="btn-primary" onClick={() => setForm({ open: true, salidaId: null })}><Plus aria-hidden="true" className="h-4 w-4" /> Nueva devolución</button>} />) : (
           <table className="table-base">
             <thead><tr><th>N° devolución</th><th>Fecha</th><th>Guía</th><th>Destino</th><th>Motivo</th><th className="num">Bueno</th><th className="num">Dañado</th><th className="num">Defectuoso</th><th></th></tr></thead>
             <tbody className="divide-y divide-slate-100">

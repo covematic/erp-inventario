@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Pencil, Eye, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Eye, Trash2, FolderKanban } from 'lucide-react';
 import api, { errorMessage, fieldErrors } from '../api/client';
 import useFetch, { useDebounce } from '../hooks/useFetch';
 import { useAuth } from '../context/AuthContext';
@@ -124,11 +124,14 @@ export default function Proyectos() {
     <>
       <PageHeader title="Proyectos" subtitle="Obras y proyectos que reciben materiales mediante guías de salida"
         actions={can('SUPERVISOR') && <button className="btn-primary" onClick={() => setForm({ open: true, proyecto: null })}><Plus className="h-4 w-4" /> Nuevo proyecto</button>} />
-      <TableCard toolbar={<>
+      <TableCard onLimpiar={() => setEstado('')} toolbar={<>
         <SearchInput value={q} onChange={setQ} placeholder="Código, nombre, cliente o responsable" className="lg:w-80" />
         <select aria-label="Filtrar por estado" className="input lg:w-40" value={estado} onChange={(e) => setEstado(e.target.value)}><option value="">Todos</option><option value="ACTIVO">Activos</option><option value="CERRADO">Cerrados</option></select>
       </>}>
-        {loading && !data ? <LoadingBlock /> : error ? <ErrorBlock message={error} onRetry={reload} /> : data.length === 0 ? <EmptyState /> : (
+        {loading && !data ? <LoadingBlock /> : error ? <ErrorBlock message={error} onRetry={reload} /> : data.length === 0 ? ((q || estado)
+          ? <EmptyState title="Ningún proyecto coincide" text="Pruebe con otra búsqueda o estado." />
+          : <EmptyState icon={FolderKanban} title="Aún no hay proyectos" text="Cree un proyecto para despacharle materiales con guías y ver cuánto consume."
+              action={can('SUPERVISOR') && <button className="btn-primary" onClick={() => setForm({ open: true, proyecto: null })}><Plus aria-hidden="true" className="h-4 w-4" /> Nuevo proyecto</button>} />) : (
           <table className="table-base">
             <thead><tr><th>Código</th><th>Proyecto</th><th>Responsable</th><th>Inicio</th><th className="num">Guías</th><th className="num">Consumo neto</th><th>Estado</th><th className="text-right">Acciones</th></tr></thead>
             <tbody className="divide-y divide-slate-100">

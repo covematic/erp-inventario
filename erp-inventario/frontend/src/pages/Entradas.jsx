@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Plus, Trash2, Eye, Ban } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { Plus, Trash2, Eye, Ban, PackagePlus } from 'lucide-react';
 import api, { errorMessage, fieldErrors } from '../api/client';
 import useFetch, { useDebounce } from '../hooks/useFetch';
 import { useAuth } from '../context/AuthContext';
@@ -203,7 +204,8 @@ export default function Entradas() {
   const [desde, setDesde] = useState('');
   const [hasta, setHasta] = useState('');
   const [page, setPage] = useState(1);
-  const [nueva, setNueva] = useState(false);
+  const location = useLocation();
+  const [nueva, setNueva] = useState(!!location.state?.nuevo);
   const [ver, setVer] = useState(null);
   const dq = useDebounce(q);
   const { data: proveedores } = useFetch('/proveedores');
@@ -216,6 +218,7 @@ export default function Entradas() {
       <PageHeader title="Entradas" subtitle="Ingreso de productos al almacén desde proveedores"
         actions={can('ALMACEN') && <button className="btn-primary" onClick={() => setNueva(true)}><Plus className="h-4 w-4" /> Nueva entrada</button>} />
       <TableCard
+        onLimpiar={() => { setProveedor(''); setDesde(''); setHasta(''); }}
         toolbar={<>
           <SearchInput value={q} onChange={setQ} placeholder="N° entrada, documento o proveedor" className="lg:w-72" />
           <select aria-label="Filtrar por proveedor" className="input lg:w-60" value={proveedor} onChange={(e) => setProveedor(e.target.value)}>
@@ -230,7 +233,10 @@ export default function Entradas() {
         </>}
         footer={data && <Pagination page={page} limit={data.limit} total={data.total} onPage={setPage} />}
       >
-        {loading && !data ? <LoadingBlock /> : error ? <ErrorBlock message={error} onRetry={reload} /> : data.data.length === 0 ? <EmptyState /> : (
+        {loading && !data ? <LoadingBlock /> : error ? <ErrorBlock message={error} onRetry={reload} /> : data.data.length === 0 ? ((q || proveedor || desde || hasta)
+          ? <EmptyState title="Ninguna entrada coincide" text="Pruebe con otra búsqueda, proveedor o rango de fechas." />
+          : <EmptyState icon={PackagePlus} title="Todavía no hay entradas" text="Registre lo que llega del proveedor: el stock sube solo y queda la factura o guía como referencia."
+              action={can('ALMACEN') && <button className="btn-primary" onClick={() => setNueva(true)}><Plus aria-hidden="true" className="h-4 w-4" /> Nueva entrada</button>} />) : (
           <table className="table-base">
             <thead><tr><th>N° entrada</th><th>Fecha</th><th>Proveedor</th><th>Documento</th><th>Almacén</th><th className="num">Ítems</th><th className="num">Total</th><th>Usuario</th><th>Estado</th><th></th></tr></thead>
             <tbody className="divide-y divide-slate-100">

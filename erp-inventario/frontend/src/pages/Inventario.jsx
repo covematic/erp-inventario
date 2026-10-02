@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { SlidersHorizontal, BookOpen } from 'lucide-react';
+import { SlidersHorizontal, BookOpen, Warehouse } from 'lucide-react';
 import api, { errorMessage, fieldErrors } from '../api/client';
 import useFetch, { useDebounce } from '../hooks/useFetch';
 import { useAuth } from '../context/AuthContext';
@@ -97,7 +97,7 @@ export default function Inventario() {
         <StatCard label="Valor (filtro actual)" value={fmtMoney(tot.valor)} hint="disponible + comprometido" />
       </div>
 
-      <TableCard toolbar={<>
+      <TableCard onLimpiar={() => { setCategoria(''); setAlmacen(''); setEstado(''); }} toolbar={<>
         <SearchInput value={q} onChange={setQ} placeholder="SKU o nombre" className="lg:w-64" />
         <select aria-label="Filtrar por categoría" className="input lg:w-52" value={categoria} onChange={(e) => setCategoria(e.target.value)}>
           <option value="">Todas las categorías</option>{categorias?.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
@@ -110,7 +110,10 @@ export default function Inventario() {
           <option value="COMPROMETIDO">Con stock comprometido</option><option value="NO_APTO">Con dañados/defectuosos</option>
         </select>
       </>}>
-        {loading && !data ? <LoadingBlock /> : error ? <ErrorBlock message={error} onRetry={reload} /> : data.length === 0 ? <EmptyState /> : (
+        {loading && !data ? <LoadingBlock /> : error ? <ErrorBlock message={error} onRetry={reload} /> : data.length === 0 ? ((q || categoria || almacen || estado)
+          ? <EmptyState title="Ningún producto coincide" text="Pruebe con otra búsqueda o limpie los filtros." />
+          : <EmptyState icon={Warehouse} title="Todavía no hay stock" text="El stock aparece cuando registra productos con stock inicial o una entrada de proveedor."
+              action={<Link to="/productos" className="btn-secondary">Ir a Productos</Link>} />) : (
           <table className="table-base">
             <thead><tr>
               <th>Producto</th><th>Almacén</th><th className="num">Stock actual</th><th className="num">Disponible</th><th className="num">Comprometido</th>

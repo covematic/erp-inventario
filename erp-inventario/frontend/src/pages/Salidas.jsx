@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Plus, Eye, Truck, Ban, Undo2, Printer } from 'lucide-react';
+import { Plus, Eye, Truck, Ban, Undo2, Printer, PackageMinus } from 'lucide-react';
 import api, { errorMessage } from '../api/client';
 import useFetch, { useDebounce } from '../hooks/useFetch';
 import { useAuth } from '../context/AuthContext';
@@ -153,6 +153,7 @@ export default function Salidas() {
         actions={can('ALMACEN') && <Link to="/salidas/nueva" className="btn-primary"><Plus className="h-4 w-4" /> Nueva guía</Link>}
       />
       <TableCard
+        onLimpiar={() => { setEstado(''); setTipo(''); setDesde(''); setHasta(''); }}
         toolbar={<>
           <SearchInput value={q} onChange={setQ} placeholder="N° salida, guía, proyecto, área o responsable" className="lg:w-80" />
           <select aria-label="Filtrar por estado" className="input lg:w-40" value={estado} onChange={(e) => setEstado(e.target.value)}>
@@ -169,7 +170,10 @@ export default function Salidas() {
         </>}
         footer={data && <Pagination page={page} limit={data.limit} total={data.total} onPage={setPage} />}
       >
-        {loading && !data ? <LoadingBlock /> : error ? <ErrorBlock message={error} onRetry={reload} /> : data.data.length === 0 ? <EmptyState /> : (
+        {loading && !data ? <LoadingBlock /> : error ? <ErrorBlock message={error} onRetry={reload} /> : data.data.length === 0 ? ((q || estado || tipo || desde || hasta)
+          ? <EmptyState title="Ninguna guía coincide" text="Pruebe con otra búsqueda, estado o rango de fechas." />
+          : <EmptyState icon={PackageMinus} title="Todavía no hay guías de salida" text="Cree una guía para despachar productos a un proyecto o a un área. El sistema valida el stock antes de que salga."
+              action={can('ALMACEN') && <Link to="/salidas/nueva" className="btn-primary"><Plus aria-hidden="true" className="h-4 w-4" /> Nueva guía</Link>} />) : (
           <table className="table-base">
             <thead><tr><th>N° salida</th><th>Fecha</th><th>Destino</th><th>Motivo</th><th>Responsable</th><th className="num">Ítems</th><th className="num">Valor</th><th>Estado</th><th></th></tr></thead>
             <tbody className="divide-y divide-slate-100">

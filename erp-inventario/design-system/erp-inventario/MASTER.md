@@ -44,3 +44,11 @@ Gráficos (validados para daltonismo): entradas `#2E63B8`, salidas `#E8741C`, de
 - [ ] Todos los campos tienen nombre accesible y los errores están junto al campo
 - [ ] Usable solo con teclado (Tab, Enter, Escape) y con foco visible
 - [ ] Una sola acción principal naranja por pantalla
+
+## Facilidad de uso (octubre 2026)
+
+1. **Inicio orientado a tareas:** `AccionesRapidas` muestra las acciones del rol; `PrimerosPasos` guía la puesta en marcha y desaparece al completarse.
+2. **Estados vacíos útiles:** distinguir "sin resultados por filtro" (ofrecer limpiar) de "aún no hay datos" (botón para crear el primero).
+3. **Filtros progresivos:** en el celular solo se ve la búsqueda; el resto va tras "Filtros (n)" con "Limpiar filtros". Pasar `onLimpiar` a `TableCard`.
+4. **Esperas explicadas:** `LoadingBlock` y el login avisan tras 4 s que el servidor se está activando.
+5. **Menos tecleo:** cantidades con `CantidadInput` (− / +), y se recuerda el último almacén usado.

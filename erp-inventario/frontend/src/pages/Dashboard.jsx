@@ -7,6 +7,7 @@ import {
 import useFetch from '../hooks/useFetch';
 import { LoadingBlock, ErrorBlock, PageHeader, StatCard, TipoMovBadge, EmptyState } from '../components/ui';
 import { fmtNum, fmtMoney, fmtDateTime } from '../utils/format';
+import { AccionesRapidas, PrimerosPasos } from '../components/AccionesRapidas';
 
 // Paleta categórica validada (daltonismo y contraste); fija por serie, nunca por posición
 const SERIES = [
@@ -48,7 +49,10 @@ export default function Dashboard() {
 
   return (
     <>
-      <PageHeader title="Dashboard" subtitle="Resumen del inventario y de los movimientos recientes" />
+      <PageHeader title="Inicio" subtitle="Tareas del día y estado del inventario" />
+      <PrimerosPasos kpis={kpis} />
+      <AccionesRapidas alertas={Number(kpis.productos_stock_bajo) + Number(kpis.productos_agotados)} />
+      <h2 className="mb-2 text-lg font-semibold text-slate-900">Estado del inventario</h2>
 
       <div className="grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4">
         <StatCard label="Productos registrados" value={fmtNum(kpis.total_productos)} icon={Package} onClick={() => navigate('/productos')} />

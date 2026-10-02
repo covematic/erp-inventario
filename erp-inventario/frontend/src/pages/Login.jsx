@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Warehouse, LogIn } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage } from '../api/client';
+import { useEsperaLarga } from '../components/ui';
 
 const DEMO = [
   ['Administrador', 'admin@erp.com', 'admin123'],
@@ -17,6 +18,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const esperaLarga = useEsperaLarga(loading);
 
   async function submit(e) {
     e.preventDefault();
@@ -59,8 +61,13 @@ export default function Login() {
               <input id="password" type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
             </div>
             <button className="btn-primary w-full py-2.5" disabled={loading}>
-              <LogIn className="h-4 w-4" /> {loading ? 'Ingresando…' : 'Ingresar'}
+              <LogIn aria-hidden="true" className="h-4 w-4" /> {loading ? 'Ingresando…' : 'Ingresar'}
             </button>
+            {esperaLarga && (
+              <p role="status" className="text-center text-sm text-slate-600">
+                El sistema se está activando. La primera vez del día puede tardar hasta un minuto.
+              </p>
+            )}
           </div>
           {import.meta.env.DEV && <div className="mt-6 border-t border-slate-200 pt-4">
             <p className="mb-2 text-sm font-medium text-slate-500">Usuarios de prueba</p>
