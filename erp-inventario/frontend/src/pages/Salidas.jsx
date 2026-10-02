@@ -155,15 +155,15 @@ export default function Salidas() {
       <TableCard
         toolbar={<>
           <SearchInput value={q} onChange={setQ} placeholder="N° salida, guía, proyecto, área o responsable" className="lg:w-80" />
-          <select className="input lg:w-40" value={estado} onChange={(e) => setEstado(e.target.value)}>
+          <select aria-label="Filtrar por estado" className="input lg:w-40" value={estado} onChange={(e) => setEstado(e.target.value)}>
             <option value="">Todos los estados</option><option value="DESPACHADA">Despachadas</option><option value="PENDIENTE">Pendientes</option><option value="ANULADA">Anuladas</option>
           </select>
-          <select className="input lg:w-36" value={tipo} onChange={(e) => setTipo(e.target.value)}>
+          <select aria-label="Filtrar por tipo" className="input lg:w-36" value={tipo} onChange={(e) => setTipo(e.target.value)}>
             <option value="">Todo destino</option><option value="PROYECTO">Proyectos</option><option value="AREA">Áreas</option>
           </select>
           <div className="flex items-center gap-2">
             <input type="date" className="input" value={desde} onChange={(e) => setDesde(e.target.value)} aria-label="Desde" />
-            <span className="text-slate-400">–</span>
+            <span className="text-slate-500">–</span>
             <input type="date" className="input" value={hasta} onChange={(e) => setHasta(e.target.value)} aria-label="Hasta" />
           </div>
         </>}

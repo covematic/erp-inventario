@@ -74,8 +74,8 @@ export default function Dashboard() {
               <p className="text-xs text-slate-500">Unidades por mes · últimos 6 meses</p>
             </div>
             <div className="flex rounded-md border border-slate-200 p-0.5">
-              <button onClick={() => setVista('grafico')} className={`rounded-md p-1.5 ${vista === 'grafico' ? 'bg-slate-100 text-slate-900' : 'text-slate-400'}`} aria-label="Ver gráfico"><BarChart3 className="h-4 w-4" /></button>
-              <button onClick={() => setVista('tabla')} className={`rounded-md p-1.5 ${vista === 'tabla' ? 'bg-slate-100 text-slate-900' : 'text-slate-400'}`} aria-label="Ver tabla"><Table2 className="h-4 w-4" /></button>
+              <button onClick={() => setVista('grafico')} className={`tap-icon rounded-md p-1.5 ${vista === 'grafico' ? 'bg-slate-100 text-slate-900' : 'text-slate-500'}`} aria-label="Ver gráfico" aria-pressed={vista === 'grafico'}><BarChart3 className="h-4 w-4" /></button>
+              <button onClick={() => setVista('tabla')} className={`tap-icon rounded-md p-1.5 ${vista === 'tabla' ? 'bg-slate-100 text-slate-900' : 'text-slate-500'}`} aria-label="Ver tabla" aria-pressed={vista === 'tabla'}><Table2 className="h-4 w-4" /></button>
             </div>
           </div>
           {vista === 'grafico' ? (
@@ -110,7 +110,7 @@ export default function Dashboard() {
         <div className="card p-4">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-semibold text-slate-900">Productos críticos</h2>
-            <Link to="/alertas" className="text-xs font-medium text-brand-600 hover:underline">Ver alertas</Link>
+            <Link to="/alertas" className="tap py-0.5 text-sm font-medium text-brand-700 hover:underline">Ver alertas</Link>
           </div>
           {criticos.length === 0 ? (
             <EmptyState title="Todo en orden" text="Ningún producto está en el mínimo o agotado." />
@@ -122,13 +122,13 @@ export default function Dashboard() {
                 return (
                   <li key={p.id} className="py-2.5">
                     <div className="flex items-center justify-between gap-2 text-sm">
-                      <Link to={`/kardex/${p.id}`} className="truncate font-medium text-slate-800 hover:text-brand-700">{p.nombre}</Link>
+                      <Link to={`/kardex/${p.id}`} className="tap min-w-0 truncate py-0.5 font-medium text-slate-800 hover:text-brand-700">{p.nombre}</Link>
                       <span className={`shrink-0 text-xs font-medium tabular-nums ${agotado ? 'text-red-600' : 'text-amber-700'}`}>
                         {agotado ? 'Agotado' : `${fmtNum(p.disponible)} / ${fmtNum(p.stock_minimo)}`}
                       </span>
                     </div>
                     <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                      <div className={`h-full rounded-full ${agotado ? 'bg-red-500' : 'bg-amber-500'}`} style={{ width: `${Math.max(pct, 2)}%` }} />
+                      <div className={`h-full rounded-full ${agotado ? 'bg-red-600' : 'bg-amber-500'}`} style={{ width: `${Math.max(pct, 2)}%` }} />
                     </div>
                   </li>
                 );
@@ -141,8 +141,8 @@ export default function Dashboard() {
       <div className="mt-5 grid gap-5 xl:grid-cols-3">
         <div className="card overflow-hidden xl:col-span-2">
           <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-            <h2 className="flex items-center gap-2 font-semibold text-slate-900"><Clock className="h-4 w-4 text-slate-400" /> Últimos movimientos</h2>
-            <Link to="/movimientos" className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:underline">Historial completo <ArrowRight className="h-3 w-3" /></Link>
+            <h2 className="flex items-center gap-2 font-semibold text-slate-900"><Clock className="h-4 w-4 text-slate-500" /> Últimos movimientos</h2>
+            <Link to="/movimientos" className="tap gap-1 text-sm font-medium text-brand-700 hover:underline">Historial completo <ArrowRight className="h-3 w-3" /></Link>
           </div>
           <div className="overflow-x-auto">
             <table className="table-base">

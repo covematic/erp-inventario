@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Package, FolderKanban, PackagePlus, PackageMinus, Undo2, Warehouse, History,
@@ -40,9 +40,14 @@ export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   useResponsiveTables();
+  const principal = useRef(null);
+  const primeraCarga = useRef(true);
 
   useEffect(() => {
     setOpen(false);
+    // Al cambiar de pantalla, el lector de pantalla empieza por el contenido nuevo
+    if (primeraCarga.current) primeraCarga.current = false;
+    else principal.current?.focus({ preventScroll: true });
     api.get('/dashboard/alertas').then((r) => setAlertCount(r.data.total)).catch(() => {});
   }, [location.pathname]);
 
@@ -77,7 +82,7 @@ export default function Layout() {
               <n.icon className="h-[18px] w-[18px]" />
               <span className="flex-1">{n.label}</span>
               {n.badge && alertCount > 0 && (
-                <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">{alertCount}</span>
+                <span className="rounded-full bg-red-600 px-1.5 py-0.5 text-xs font-semibold text-white">{alertCount}<span className="sr-only"> alertas</span></span>
               )}
             </NavLink>
           )
@@ -95,7 +100,7 @@ export default function Layout() {
           </div>
           <button
             onClick={() => { logout(); navigate('/login'); }}
-            className="rounded-md p-2 text-slate-400 hover:bg-slate-800 hover:text-white"
+            className="rounded-md p-2.5 text-slate-300 hover:bg-slate-800 hover:text-white"
             title="Cerrar sesión"
             aria-label="Cerrar sesión"
           >
@@ -108,14 +113,17 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen">
+      <a href="#contenido" className="sr-only z-[70] rounded-md bg-beam-500 px-4 py-3 font-semibold text-slate-900 focus:not-sr-only focus:fixed focus:left-3 focus:top-3">
+        Saltar al contenido
+      </a>
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 lg:block">{sidebar}</aside>
 
       {open && (
-        <div className="fixed inset-0 z-40 lg:hidden">
+        <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Menú principal" onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}>
           <div className="absolute inset-0 bg-slate-900/60" onClick={() => setOpen(false)} />
           <aside className="absolute inset-y-0 left-0 w-72 max-w-[85%]">
             {sidebar}
-            <button onClick={() => setOpen(false)} className="absolute right-3 top-5 rounded-md p-1 text-slate-400 hover:text-white" aria-label="Cerrar menú">
+            <button onClick={() => setOpen(false)} className="absolute right-2 top-3 inline-flex h-11 w-11 items-center justify-center rounded-md text-slate-300 hover:text-white" aria-label="Cerrar menú">
               <X className="h-5 w-5" />
             </button>
           </aside>
@@ -124,13 +132,13 @@ export default function Layout() {
 
       <div className="lg:pl-64">
         <header style={{ paddingTop: 'env(safe-area-inset-top)' }} className="sticky top-0 z-20 flex min-h-14 items-center gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur lg:hidden">
-          <button onClick={() => setOpen(true)} className="rounded-md p-1.5 text-slate-600 hover:bg-slate-100" aria-label="Abrir menú">
+          <button onClick={() => setOpen(true)} className="-ml-2 inline-flex h-11 w-11 items-center justify-center rounded-md text-slate-700 hover:bg-slate-100" aria-label="Abrir menú" aria-expanded={open}>
             <Menu className="h-5 w-5" />
           </button>
           <span className="flex h-7 w-7 items-center justify-center rounded-[5px] bg-beam-500 text-slate-900"><Warehouse className="h-4 w-4" /></span>
           <span className="font-display text-xl font-semibold text-slate-900">ERP Inventario</span>
         </header>
-        <main className="mx-auto max-w-[1400px] px-3 pb-28 pt-4 sm:px-6 sm:py-6 lg:px-8 lg:pb-6">
+        <main id="contenido" ref={principal} tabIndex={-1} className="mx-auto max-w-[1400px] outline-none px-3 pb-28 pt-4 sm:px-6 sm:py-6 lg:px-8 lg:pb-6">
           <Outlet />
         </main>
       </div>

@@ -9,6 +9,7 @@ import Modal from '../components/Modal';
 import ProductSelect from '../components/ProductSelect';
 import { PageHeader, TableCard, SearchInput, LoadingBlock, ErrorBlock, EmptyState, StockBadge, Field, StatCard } from '../components/ui';
 import { fmtNum, fmtMoney, hoy, TIPO_AJUSTE } from '../utils/format';
+import { enfocarPrimerError } from '../utils/foco';
 
 function AjusteForm({ open, onClose, onSaved, almacenes, productos }) {
   const toast = useToast();
@@ -27,7 +28,7 @@ function AjusteForm({ open, onClose, onSaved, almacenes, productos }) {
     else if (f.tipo !== 'INCREMENTO' && actual && Number(f.cantidad) > Number(actual[campo])) e.cantidad = `No puede superar el stock ${campo} (${fmtNum(actual[campo])})`;
     if (!f.motivo.trim()) e.motivo = 'El motivo es obligatorio';
     setErrors(e);
-    if (Object.keys(e).length) return;
+    if (Object.keys(e).length) { enfocarPrimerError(); return; }
     setSaving(true);
     try {
       const { data } = await api.post('/inventario/ajustes', { ...f, almacen_id: Number(almacenId), cantidad: Number(f.cantidad) });
@@ -98,13 +99,13 @@ export default function Inventario() {
 
       <TableCard toolbar={<>
         <SearchInput value={q} onChange={setQ} placeholder="SKU o nombre" className="lg:w-64" />
-        <select className="input lg:w-52" value={categoria} onChange={(e) => setCategoria(e.target.value)}>
+        <select aria-label="Filtrar por categoría" className="input lg:w-52" value={categoria} onChange={(e) => setCategoria(e.target.value)}>
           <option value="">Todas las categorías</option>{categorias?.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
         </select>
-        <select className="input lg:w-48" value={almacen} onChange={(e) => setAlmacen(e.target.value)}>
+        <select aria-label="Almacén" className="input lg:w-48" value={almacen} onChange={(e) => setAlmacen(e.target.value)}>
           <option value="">Todos los almacenes</option>{almacenes?.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
         </select>
-        <select className="input lg:w-52" value={estado} onChange={(e) => setEstado(e.target.value)}>
+        <select aria-label="Filtrar por estado" className="input lg:w-52" value={estado} onChange={(e) => setEstado(e.target.value)}>
           <option value="">Todos</option><option value="BAJO">Stock bajo</option><option value="AGOTADO">Agotados</option>
           <option value="COMPROMETIDO">Con stock comprometido</option><option value="NO_APTO">Con dañados/defectuosos</option>
         </select>

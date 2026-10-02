@@ -8,6 +8,7 @@ import { useToast } from '../context/ToastContext';
 import Modal from '../components/Modal';
 import { PageHeader, TableCard, SearchInput, LoadingBlock, ErrorBlock, EmptyState, Pagination, Field, DetailItem, EstadoProductoBadge } from '../components/ui';
 import { fmtNum, fmtDate, hoy } from '../utils/format';
+import { enfocarPrimerError } from '../utils/foco';
 
 const ESTADOS = [
   ['BUENO', 'Bueno', 'Vuelve al stock disponible', 'text-emerald-700'],
@@ -56,7 +57,7 @@ function DevolucionForm({ open, salidaInicial, onClose, onSaved }) {
     }
     if (salidaId && total <= 0) e.items = 'Ingrese la cantidad devuelta de al menos un producto';
     setErrors(e);
-    if (Object.keys(e).length) return toast.error('Revise los datos de la devolución');
+    if (Object.keys(e).length) { enfocarPrimerError(); return toast.error('Revise los datos de la devolución'); }
 
     const items = lineas.flatMap((l) => ESTADOS
       .filter(([est]) => Number(cant[l.id]?.[est]) > 0)
@@ -128,7 +129,7 @@ function DevolucionForm({ open, salidaInicial, onClose, onSaved }) {
                       <td className="num font-medium">{fmtNum(l.pendiente_devolucion)}</td>
                       {ESTADOS.map(([k, , hint]) => (
                         <td key={k} className="w-24">
-                          <input type="number" min="0" step="any" max={l.pendiente_devolucion} title={hint}
+                          <input type="number" aria-label={`${l.producto_nombre}: cantidad en estado ${k.toLowerCase()}`} min="0" step="any" max={l.pendiente_devolucion} title={hint}
                             className={`input w-24 text-right ${errors[`l${l.id}`] ? 'input-error' : ''}`}
                             value={cant[l.id]?.[k] ?? ''} placeholder="0" onChange={(e) => setC(l.id, k, e.target.value)} />
                         </td>
@@ -208,12 +209,12 @@ export default function Devoluciones() {
       <TableCard
         toolbar={<>
           <SearchInput value={q} onChange={setQ} placeholder="N° devolución, guía, proyecto o responsable" className="lg:w-80" />
-          <select className="input lg:w-48" value={estado} onChange={(e) => setEstado(e.target.value)}>
+          <select aria-label="Filtrar por estado" className="input lg:w-48" value={estado} onChange={(e) => setEstado(e.target.value)}>
             <option value="">Cualquier estado</option><option value="BUENO">Con productos buenos</option><option value="DANADO">Con dañados</option><option value="DEFECTUOSO">Con defectuosos</option>
           </select>
           <div className="flex items-center gap-2">
             <input type="date" className="input" value={desde} onChange={(e) => setDesde(e.target.value)} aria-label="Desde" />
-            <span className="text-slate-400">–</span>
+            <span className="text-slate-500">–</span>
             <input type="date" className="input" value={hasta} onChange={(e) => setHasta(e.target.value)} aria-label="Hasta" />
           </div>
         </>}

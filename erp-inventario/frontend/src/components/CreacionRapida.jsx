@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
+import { enfocarPrimerError } from '../utils/foco';
 import api, { errorMessage, fieldErrors } from '../api/client';
 import { useToast } from '../context/ToastContext';
 
@@ -20,7 +21,7 @@ export function CreacionRapida({ titulo, campos, endpoint, onCreado, onCancelar 
       if (msg) e[c.key] = msg;
     }
     setErrors(e);
-    if (Object.keys(e).length) return;
+    if (Object.keys(e).length) { enfocarPrimerError(); return; }
     setSaving(true);
     try {
       const body = Object.fromEntries(campos.map((c) => [c.key, v[c.key].trim()]));
@@ -43,6 +44,8 @@ export function CreacionRapida({ titulo, campos, endpoint, onCreado, onCancelar 
           <input
             autoFocus={i === 0}
             className={`input ${errors[c.key] ? 'input-error' : ''}`}
+            aria-label={c.placeholder}
+            aria-invalid={errors[c.key] ? true : undefined}
             placeholder={c.placeholder}
             value={v[c.key]}
             onChange={(e) => setV({ ...v, [c.key]: e.target.value })}
@@ -70,8 +73,8 @@ export const CAMPOS_PROVEEDOR = [
 export function EtiquetaConAccion({ label, required, accion, onAccion }) {
   return (
     <div className="mb-1 flex items-center justify-between">
-      <span className="text-sm font-medium text-slate-700">{label} {required && <span className="text-red-500">*</span>}</span>
-      {accion && <button type="button" onClick={onAccion} className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-800"><Plus className="h-3.5 w-3.5" /> {accion}</button>}
+      <span className="text-sm font-medium text-slate-700">{label} {required && <span className="text-red-600">*</span>}</span>
+      {accion && <button type="button" onClick={onAccion} className="tap -my-3 -mr-2 inline-flex items-center gap-1 px-2 py-1 text-sm font-medium text-brand-700 hover:text-brand-800"><Plus className="h-3.5 w-3.5" /> {accion}</button>}
     </div>
   );
 }

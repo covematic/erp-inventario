@@ -13,7 +13,7 @@ export default {
         // Neutros con leve tinte verde (concreto pintado de almacén)
         slate: {
           50: '#F4F6F3', 100: '#ECEEEA', 200: '#D9DED7', 300: '#C0C7BE', 400: '#8E978C',
-          500: '#666F65', 600: '#4C554C', 700: '#3A423B', 800: '#273029', 900: '#1B2420', 950: '#111814',
+          500: '#5F685E', 600: '#4C554C', 700: '#3A423B', 800: '#273029', 900: '#1B2420', 950: '#111814',
         },
         // Rack azul
         brand: {

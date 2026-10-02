@@ -6,6 +6,7 @@ import { useToast } from '../context/ToastContext';
 import Modal from '../components/Modal';
 import { PageHeader, TableCard, LoadingBlock, ErrorBlock, Badge, Field } from '../components/ui';
 import { ROLES, fmtDate } from '../utils/format';
+import { enfocarPrimerError } from '../utils/foco';
 
 function UsuarioForm({ open, usuario, roles, onClose, onSaved }) {
   const toast = useToast();
@@ -24,7 +25,7 @@ function UsuarioForm({ open, usuario, roles, onClose, onSaved }) {
     if (usuario && f.password && f.password.length < 6) e.password = 'Mínimo 6 caracteres';
     if (!f.rol_id) e.rol_id = 'Seleccione un rol';
     setErrors(e);
-    if (Object.keys(e).length) return;
+    if (Object.keys(e).length) { enfocarPrimerError(); return; }
     setSaving(true);
     const body = { nombre: f.nombre, email: f.email, rol_id: Number(f.rol_id), activo: f.activo, ...(f.password ? { password: f.password } : {}) };
     try {

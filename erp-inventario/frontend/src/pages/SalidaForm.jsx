@@ -8,6 +8,7 @@ import ProductSelect from '../components/ProductSelect';
 import { ConfirmDialog } from '../components/Modal';
 import { PageHeader, Field, LoadingBlock } from '../components/ui';
 import { fmtNum, hoy, MOTIVOS_SALIDA } from '../utils/format';
+import { enfocarPrimerError } from '../utils/foco';
 
 let lineId = 1;
 const nuevaLinea = () => ({ key: lineId++, producto_id: null, cantidad: '' });
@@ -84,6 +85,7 @@ export default function SalidaForm() {
     const e = validar();
     setErrors(e);
     if (Object.keys(e).length) {
+      enfocarPrimerError();
       toast.error(e.stock ? 'Hay productos con cantidad mayor al stock disponible. No se puede registrar la salida.' : 'Revise los campos marcados');
       return;
     }
@@ -137,11 +139,11 @@ export default function SalidaForm() {
         <div className="card space-y-4 p-5 xl:col-span-1">
           <h2 className="font-semibold text-slate-900">Datos de la guía</h2>
           <div>
-            <span className="label">Destino <span className="text-red-500">*</span></span>
+            <span className="label">Destino <span className="text-red-600">*</span></span>
             <div className="grid grid-cols-2 gap-2">
               {[['PROYECTO', 'Proyecto', FolderKanban], ['AREA', 'Área interna', Building2]].map(([v, l, Icon]) => (
                 <button key={v} type="button" onClick={() => setDestino(v)}
-                  className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium ${f.tipo_destino === v ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-slate-300 text-slate-600 hover:bg-slate-50'}`}>
+                  className={`tap flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium ${f.tipo_destino === v ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-slate-300 text-slate-600 hover:bg-slate-50'}`}>
                   <Icon className="h-4 w-4" /> {l}
                 </button>
               ))}
@@ -218,7 +220,7 @@ export default function SalidaForm() {
               const falta = faltantes[l.producto_id] !== undefined;
               return (
                 <div key={l.key} className={`grid grid-cols-12 items-start gap-3 rounded-md border p-3 ${excede || falta ? 'border-red-300 bg-red-50/40' : 'border-slate-200'}`}>
-                  <span className="col-span-12 text-xs font-medium text-slate-400 sm:col-span-1 sm:pt-2.5">#{i + 1}</span>
+                  <span className="col-span-12 text-xs font-medium text-slate-500 sm:col-span-1 sm:pt-2.5">#{i + 1}</span>
                   <div className="col-span-12 sm:col-span-6">
                     <ProductSelect products={listaProductos} value={l.producto_id} excludeIds={usados} showStock
                       error={errors[`linea_${l.key}_producto`]} onChange={(p) => setLinea(l.key, { producto_id: p.id })} />
@@ -226,9 +228,9 @@ export default function SalidaForm() {
                   </div>
                   <div className="col-span-7 sm:col-span-3">
                     <div className="relative">
-                      <input type="number" min="0" step="any" className={`input pr-14 text-right ${errors[`linea_${l.key}_cantidad`] || excede ? 'input-error' : ''}`}
+                      <input type="number" aria-label="Cantidad requerida" min="0" step="any" className={`input pr-14 text-right ${errors[`linea_${l.key}_cantidad`] || excede ? 'input-error' : ''}`}
                         value={l.cantidad} placeholder="0" onChange={(e) => setLinea(l.key, { cantidad: e.target.value })} />
-                      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">{prod?.unidad_medida}</span>
+                      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500">{prod?.unidad_medida}</span>
                     </div>
                     {disp !== null && (
                       <p className={`mt-1 text-xs ${excede ? 'font-medium text-red-600' : 'text-slate-500'}`}>

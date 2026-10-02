@@ -1,3 +1,4 @@
+import { Children, cloneElement, isValidElement, useId } from 'react';
 import { Loader2, Inbox, ChevronLeft, ChevronRight, Search, AlertCircle } from 'lucide-react';
 
 export function Spinner({ className = 'h-5 w-5' }) {
@@ -15,7 +16,7 @@ export function LoadingBlock({ label = 'Cargando…' }) {
 export function ErrorBlock({ message, onRetry }) {
   return (
     <div className="flex flex-col items-center gap-3 py-12 text-center">
-      <AlertCircle className="h-8 w-8 text-red-500" />
+      <AlertCircle className="h-8 w-8 text-red-600" />
       <p className="max-w-md text-sm text-slate-600">{message}</p>
       {onRetry && <button className="btn-secondary btn-sm" onClick={onRetry}>Reintentar</button>}
     </div>
@@ -101,16 +102,44 @@ export function EstadoProductoBadge({ estado }) {
 }
 
 /** Campo de formulario con etiqueta y mensaje de error. */
+const CONTROLES = ['input', 'select', 'textarea'];
+
+/** Busca el primer input/select/textarea (hasta 2 niveles) y le agrega id y atributos de accesibilidad. */
+function vincularControl(nodo, extra, nivel = 0) {
+  if (!isValidElement(nodo) || nivel > 2) return [nodo, false];
+  if (CONTROLES.includes(nodo.type)) return [cloneElement(nodo, { ...extra, id: nodo.props.id || extra.id }), true];
+  if (typeof nodo.type !== 'string' || !nodo.props.children) return [nodo, false];
+  let hecho = false;
+  const hijos = Children.map(nodo.props.children, (h) => {
+    if (hecho) return h;
+    const [nuevo, ok] = vincularControl(h, extra, nivel + 1);
+    hecho = ok;
+    return nuevo;
+  });
+  return [hecho ? cloneElement(nodo, {}, hijos) : nodo, hecho];
+}
+
+/** Campo de formulario: la etiqueta queda vinculada al control y el error se anuncia y se conecta con él. */
 export function Field({ label, error, required, hint, children, className = '' }) {
+  const id = useId();
+  const msgId = `${id}-msg`;
+  const [control, vinculado] = vincularControl(children, {
+    id,
+    'aria-invalid': error ? true : undefined,
+    'aria-describedby': error || hint ? msgId : undefined,
+    'aria-required': required ? true : undefined,
+  });
   return (
     <div className={className}>
       {label && (
-        <label className="label">
-          {label} {required && <span className="text-red-500">*</span>}
+        <label className="label" htmlFor={vinculado ? id : undefined}>
+          {label} {required && <span className="text-red-600" aria-hidden="true">*</span>}
         </label>
       )}
-      {children}
-      {error ? <p className="mt-1 text-xs text-red-600">{error}</p> : hint ? <p className="mt-1 text-xs text-slate-500">{hint}</p> : null}
+      {control}
+      {error
+        ? <p id={msgId} role="alert" className="mt-1 text-xs font-medium text-red-700">{error}</p>
+        : hint ? <p id={msgId} className="mt-1 text-xs text-slate-500">{hint}</p> : null}
     </div>
   );
 }
@@ -118,8 +147,8 @@ export function Field({ label, error, required, hint, children, className = '' }
 export function SearchInput({ value, onChange, placeholder = 'Buscar…', className = '' }) {
   return (
     <div className={`relative ${className}`}>
-      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-      <input className="input pl-9" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />
+      <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+      <input type="search" aria-label={placeholder.replace(/…$/, '')} className="input pl-9" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />
     </div>
   );
 }

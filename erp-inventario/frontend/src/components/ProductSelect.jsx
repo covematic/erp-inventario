@@ -34,10 +34,10 @@ export default function ProductSelect({ products, value, onChange, showStock, ex
         onClick={() => { setOpen((o) => !o); setQ(''); }}
         className={`input flex items-center justify-between text-left ${error ? 'input-error' : ''}`}
       >
-        <span className={`truncate ${selected ? '' : 'text-slate-400'}`}>
+        <span className={`truncate ${selected ? '' : 'text-slate-500'}`}>
           {selected ? `${selected.sku} · ${selected.nombre}` : 'Seleccione un producto'}
         </span>
-        <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-slate-400" />
+        <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-slate-500" />
       </button>
       {open && (
         <div className="absolute z-30 mt-1 w-full min-w-[280px] rounded-md border border-slate-200 bg-white shadow-lg">

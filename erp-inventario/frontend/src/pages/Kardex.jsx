@@ -46,7 +46,7 @@ export default function Kardex() {
         <div className="lg:col-span-5">
           <ProductSelect products={productos?.data || []} value={Number(productoId) || null} onChange={(p) => navigate(`/kardex/${p.id}${almacen ? `?almacen_id=${almacen}` : ''}`)} />
         </div>
-        <select className="input lg:col-span-3" value={almacen} onChange={(e) => setAlmacen(e.target.value)}>
+        <select aria-label="Almacén" className="input lg:col-span-3" value={almacen} onChange={(e) => setAlmacen(e.target.value)}>
           {almacenes?.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
         </select>
         <input type="date" className="input lg:col-span-2" value={desde} onChange={(e) => setDesde(e.target.value)} aria-label="Desde" />

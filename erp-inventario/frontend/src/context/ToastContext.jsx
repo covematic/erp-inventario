@@ -30,14 +30,14 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={toast}>
       {children}
-      <div className="fixed bottom-4 right-4 z-[60] flex w-[calc(100%-2rem)] max-w-sm flex-col gap-2">
+      <div aria-live="polite" aria-relevant="additions" className="fixed bottom-24 right-4 z-[60] flex w-[calc(100%-2rem)] max-w-sm flex-col gap-2 lg:bottom-4">
         {toasts.map((t) => {
           const { icon: Icon, cls, iconCls } = ESTILOS[t.type];
           return (
-            <div key={t.id} role="status" className={`flex items-start gap-3 rounded-md border px-4 py-3 text-sm shadow-lg ${cls}`}>
-              <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${iconCls}`} />
+            <div key={t.id} role={t.type === 'error' ? 'alert' : 'status'} className={`flex items-start gap-3 rounded-md border px-4 py-3 text-sm shadow-lg ${cls}`}>
+              <Icon aria-hidden="true" className={`mt-0.5 h-5 w-5 shrink-0 ${iconCls}`} />
               <p className="flex-1 leading-snug">{t.message}</p>
-              <button onClick={() => remove(t.id)} className="opacity-60 hover:opacity-100" aria-label="Cerrar">
+              <button onClick={() => remove(t.id)} className="-m-2.5 inline-flex h-11 w-11 shrink-0 items-center justify-center opacity-70 hover:opacity-100" aria-label="Cerrar aviso">
                 <X className="h-4 w-4" />
               </button>
             </div>

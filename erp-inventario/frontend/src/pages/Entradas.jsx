@@ -8,6 +8,7 @@ import Modal, { ConfirmDialog } from '../components/Modal';
 import ProductSelect from '../components/ProductSelect';
 import { PageHeader, TableCard, SearchInput, LoadingBlock, ErrorBlock, EmptyState, Pagination, EstadoBadge, Field, DetailItem } from '../components/ui';
 import { fmtNum, fmtMoney, fmtDate, fmtDateTime, hoy } from '../utils/format';
+import { enfocarPrimerError } from '../utils/foco';
 import { CreacionRapida, EtiquetaConAccion, CAMPOS_PROVEEDOR } from '../components/CreacionRapida';
 
 let k = 1;
@@ -52,7 +53,7 @@ function EntradaForm({ open, onClose, onSaved }) {
       if (l.costo_unitario === '' || Number(l.costo_unitario) < 0) e[`u${l.key}`] = 'Costo ≥ 0';
     });
     setErrors(e);
-    if (Object.keys(e).length) return toast.error('Revise los campos marcados');
+    if (Object.keys(e).length) { enfocarPrimerError(); return toast.error('Revise los campos marcados'); }
     setSaving(true);
     try {
       const { data } = await api.post('/entradas', {
@@ -80,7 +81,7 @@ function EntradaForm({ open, onClose, onSaved }) {
         <Field label="Fecha" required error={errors.fecha}><input type="date" className="input" value={f.fecha || ''} max={hoy()} onChange={set('fecha')} /></Field>
         <div className="sm:col-span-2">
           <EtiquetaConAccion label="Proveedor" accion={!nuevoProv && 'Nuevo'} onAccion={() => setNuevoProv(true)} />
-          <select className="input" value={f.proveedor_id || ''} onChange={set('proveedor_id')}>
+          <select aria-label="Proveedor" className="input" value={f.proveedor_id || ''} onChange={set('proveedor_id')}>
             <option value="">Sin proveedor (inventario inicial u otro ingreso)</option>
             {proveedores?.map((p) => <option key={p.id} value={p.id}>{p.razon_social} · {p.ruc}</option>)}
           </select>
@@ -125,10 +126,10 @@ function EntradaForm({ open, onClose, onSaved }) {
                   {errors[`p${l.key}`] && <p className="mt-1 text-xs text-red-600">{errors[`p${l.key}`]}</p>}
                 </div>
                 <div className="col-span-4 sm:col-span-2">
-                  <input type="number" min="0" step="any" placeholder={prod?.unidad_medida || 'Cant.'} className={`input text-right ${errors[`c${l.key}`] ? 'input-error' : ''}`} value={l.cantidad} onChange={(e) => setL(l.key, { cantidad: e.target.value })} />
+                  <input type="number" aria-label="Cantidad" min="0" step="any" placeholder={prod?.unidad_medida || 'Cant.'} className={`input text-right ${errors[`c${l.key}`] ? 'input-error' : ''}`} value={l.cantidad} onChange={(e) => setL(l.key, { cantidad: e.target.value })} />
                 </div>
                 <div className="col-span-4 sm:col-span-2">
-                  <input type="number" min="0" step="0.01" placeholder="0.00" className={`input text-right ${errors[`u${l.key}`] ? 'input-error' : ''}`} value={l.costo_unitario} onChange={(e) => setL(l.key, { costo_unitario: e.target.value })} />
+                  <input type="number" aria-label="Costo unitario" min="0" step="0.01" placeholder="0.00" className={`input text-right ${errors[`u${l.key}`] ? 'input-error' : ''}`} value={l.costo_unitario} onChange={(e) => setL(l.key, { costo_unitario: e.target.value })} />
                 </div>
                 <div className="col-span-4 flex items-center justify-end gap-1 sm:col-span-2">
                   <span className="text-sm tabular-nums text-slate-700">{fmtMoney((Number(l.cantidad) || 0) * (Number(l.costo_unitario) || 0))}</span>
@@ -217,13 +218,13 @@ export default function Entradas() {
       <TableCard
         toolbar={<>
           <SearchInput value={q} onChange={setQ} placeholder="N° entrada, documento o proveedor" className="lg:w-72" />
-          <select className="input lg:w-60" value={proveedor} onChange={(e) => setProveedor(e.target.value)}>
+          <select aria-label="Filtrar por proveedor" className="input lg:w-60" value={proveedor} onChange={(e) => setProveedor(e.target.value)}>
             <option value="">Todos los proveedores</option>
             {proveedores?.map((p) => <option key={p.id} value={p.id}>{p.razon_social}</option>)}
           </select>
           <div className="flex items-center gap-2">
             <input type="date" className="input" value={desde} onChange={(e) => setDesde(e.target.value)} aria-label="Desde" />
-            <span className="text-slate-400">–</span>
+            <span className="text-slate-500">–</span>
             <input type="date" className="input" value={hasta} onChange={(e) => setHasta(e.target.value)} aria-label="Hasta" />
           </div>
         </>}
@@ -237,7 +238,7 @@ export default function Entradas() {
                 <tr key={e.id} className="cursor-pointer" onClick={() => setVer(e.id)}>
                   <td><span className="code-tag">{e.numero}</span></td>
                   <td className="whitespace-nowrap">{fmtDate(e.fecha)}</td>
-                  <td className="max-w-[220px] truncate">{e.proveedor_nombre || <span className="text-slate-400">Sin proveedor</span>}</td>
+                  <td className="max-w-[220px] truncate">{e.proveedor_nombre || <span className="text-slate-500">Sin proveedor</span>}</td>
                   <td className="whitespace-nowrap text-slate-500">{e.documento_ref || '—'}</td>
                   <td className="whitespace-nowrap">{e.almacen_nombre}</td>
                   <td className="num">{e.items}</td>

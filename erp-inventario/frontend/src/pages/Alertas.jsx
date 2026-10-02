@@ -47,7 +47,7 @@ export default function Alertas() {
       <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {Object.entries(TIPOS).map(([k, t]) => (
           <div key={k} className="card flex items-center gap-3 p-3">
-            <t.icon className="h-5 w-5 text-slate-400" />
+            <t.icon className="h-5 w-5 text-slate-500" />
             <div><p className="text-lg font-semibold tabular-nums">{data.resumen[k] || 0}</p><p className="text-xs text-slate-500">{t.label}</p></div>
           </div>
         ))}
@@ -63,7 +63,7 @@ export default function Alertas() {
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-slate-900">{a.titulo}</p>
                   <p className="text-sm text-slate-600">{a.mensaje}</p>
-                  <p className="mt-0.5 text-xs text-slate-400">{n.label} · {TIPOS[a.tipo]?.label}{a.fecha ? ` · ${fmtDateTime(a.fecha)}` : ''}</p>
+                  <p className="mt-0.5 text-xs text-slate-500">{n.label} · {TIPOS[a.tipo]?.label}{a.fecha ? ` · ${fmtDateTime(a.fecha)}` : ''}</p>
                 </div>
                 <div className="flex gap-2">
                   {link && <Link to={link.to} state={link.state} className="btn-secondary btn-sm">{link.label}</Link>}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { enfocarPrimerError } from '../utils/foco';
 import api, { errorMessage, fieldErrors } from '../api/client';
 import useFetch, { useDebounce } from '../hooks/useFetch';
 import { useAuth } from '../context/AuthContext';
@@ -53,7 +54,7 @@ function CatalogoForm({ tabla, registro, open, onClose, onSaved }) {
       else if (v && c.pattern && !c.pattern.test(v)) e[c.key] = c.patternMsg;
     }
     setErrors(e);
-    if (Object.keys(e).length) return;
+    if (Object.keys(e).length) { enfocarPrimerError(); return; }
     setSaving(true);
     try {
       if (registro) await api.put(`/${tabla}/${registro.id}`, f); else await api.post(`/${tabla}`, f);

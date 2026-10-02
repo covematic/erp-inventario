@@ -3,7 +3,12 @@
 @tailwind utilities;
 
 @layer base {
-  html { -webkit-font-smoothing: antialiased; }
+  html { -webkit-font-smoothing: antialiased; touch-action: manipulation; }
+  /* Foco visible para teclado en enlaces y elementos sin estilo propio */
+  a:focus-visible, [tabindex]:focus-visible, summary:focus-visible { outline: 2px solid theme('colors.brand.600'); outline-offset: 2px; border-radius: 4px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  }
   body { @apply text-slate-800; font-feature-settings: 'tnum' 0; }
   h1, h2, h3 { @apply font-display; text-wrap: balance; }
 }
@@ -109,5 +114,16 @@
   .table-base td input.input { max-width: 140px; }
 }
 
+/* Puntero fino (PC): enlaces dentro de tablas con al menos 24 px de alto (WCAG 2.2) */
+.table-base td a { min-height: 24px; padding-block: 2px; }
+
+/* Pantallas táctiles: toda zona tocable mide al menos 44 px (Apple HIG / Material) */
+@media (pointer: coarse) {
+  .btn, .btn-sm, .btn-ghost { min-height: 44px; min-width: 44px; }
+  .input, select.input { min-height: 44px; }
+  .tap { display: inline-flex; align-items: center; min-height: 44px; }
+  .tap-icon { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; }
+  .table-base td a { display: inline-flex; align-items: center; min-height: 44px; }
+}
 /* Espacio para la barra inferior en iPhone */
 .pb-safe { padding-bottom: env(safe-area-inset-bottom); }

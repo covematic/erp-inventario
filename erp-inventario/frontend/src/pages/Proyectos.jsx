@@ -7,6 +7,7 @@ import { useToast } from '../context/ToastContext';
 import Modal, { ConfirmDialog } from '../components/Modal';
 import { PageHeader, TableCard, SearchInput, LoadingBlock, ErrorBlock, EmptyState, EstadoBadge, Field, DetailItem } from '../components/ui';
 import { fmtNum, fmtMoney, fmtDate, hoy } from '../utils/format';
+import { enfocarPrimerError } from '../utils/foco';
 
 const VACIO = { codigo: '', nombre: '', cliente: '', responsable: '', ubicacion: '', fecha_inicio: hoy(), fecha_fin: '', estado: 'ACTIVO' };
 
@@ -28,7 +29,7 @@ function ProyectoForm({ open, proyecto, onClose, onSaved }) {
     if (!f.fecha_inicio) e.fecha_inicio = 'La fecha de inicio es obligatoria';
     if (f.fecha_fin && f.fecha_fin < f.fecha_inicio) e.fecha_fin = 'No puede ser anterior al inicio';
     setErrors(e);
-    if (Object.keys(e).length) return;
+    if (Object.keys(e).length) { enfocarPrimerError(); return; }
     setSaving(true);
     const body = { codigo: f.codigo, nombre: f.nombre, cliente: f.cliente, responsable: f.responsable, ubicacion: f.ubicacion, fecha_inicio: f.fecha_inicio, fecha_fin: f.fecha_fin || null, estado: f.estado };
     try {
@@ -125,7 +126,7 @@ export default function Proyectos() {
         actions={can('SUPERVISOR') && <button className="btn-primary" onClick={() => setForm({ open: true, proyecto: null })}><Plus className="h-4 w-4" /> Nuevo proyecto</button>} />
       <TableCard toolbar={<>
         <SearchInput value={q} onChange={setQ} placeholder="Código, nombre, cliente o responsable" className="lg:w-80" />
-        <select className="input lg:w-40" value={estado} onChange={(e) => setEstado(e.target.value)}><option value="">Todos</option><option value="ACTIVO">Activos</option><option value="CERRADO">Cerrados</option></select>
+        <select aria-label="Filtrar por estado" className="input lg:w-40" value={estado} onChange={(e) => setEstado(e.target.value)}><option value="">Todos</option><option value="ACTIVO">Activos</option><option value="CERRADO">Cerrados</option></select>
       </>}>
         {loading && !data ? <LoadingBlock /> : error ? <ErrorBlock message={error} onRetry={reload} /> : data.length === 0 ? <EmptyState /> : (
           <table className="table-base">

@@ -28,15 +28,15 @@ export default function Movimientos() {
       <TableCard
         toolbar={<div className="grid w-full gap-2 sm:grid-cols-2 lg:grid-cols-7">
           <SearchInput value={documento} onChange={setDocumento} placeholder="N° documento" />
-          <select className="input lg:col-span-2" value={producto} onChange={(e) => setProducto(e.target.value)}>
+          <select aria-label="Filtrar por producto" className="input lg:col-span-2" value={producto} onChange={(e) => setProducto(e.target.value)}>
             <option value="">Todos los productos</option>
             {productos?.data.map((p) => <option key={p.id} value={p.id}>{p.sku} · {p.nombre}</option>)}
           </select>
-          <select className="input" value={tipo} onChange={(e) => setTipo(e.target.value)}>
+          <select aria-label="Filtrar por tipo" className="input" value={tipo} onChange={(e) => setTipo(e.target.value)}>
             <option value="">Todos los tipos</option>
             {Object.entries(TIPO_MOV).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
-          <select className="input" value={usuario} onChange={(e) => setUsuario(e.target.value)}>
+          <select aria-label="Filtrar por usuario" className="input" value={usuario} onChange={(e) => setUsuario(e.target.value)}>
             <option value="">Todos los usuarios</option>
             {usuarios?.map((u) => <option key={u.id} value={u.id}>{u.nombre}</option>)}
           </select>

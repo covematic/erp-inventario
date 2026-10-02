@@ -8,6 +8,7 @@ import { useToast } from '../context/ToastContext';
 import Modal, { ConfirmDialog } from '../components/Modal';
 import { PageHeader, TableCard, SearchInput, LoadingBlock, ErrorBlock, EmptyState, Pagination, StockBadge, Badge, Field } from '../components/ui';
 import { fmtNum, fmtMoney, hoy } from '../utils/format';
+import { enfocarPrimerError } from '../utils/foco';
 import { CreacionRapida, EtiquetaConAccion, CAMPOS_CATEGORIA, CAMPOS_PROVEEDOR } from '../components/CreacionRapida';
 
 const VACIO = {
@@ -77,7 +78,7 @@ function ProductoForm({ open, producto, categorias, proveedores, onCategoriaCrea
     e?.preventDefault();
     const errs = validar(f, usaAuto);
     setErrors(errs);
-    if (Object.keys(errs).length) return;
+    if (Object.keys(errs).length) { enfocarPrimerError(); return; }
     setSaving(true);
     const body = {
       nombre: f.nombre.trim(), descripcion: f.descripcion, categoria_id: Number(f.categoria_id),
@@ -111,7 +112,7 @@ function ProductoForm({ open, producto, categorias, proveedores, onCategoriaCrea
 
   const margen = Number(f.precio_venta) > 0 && Number(f.precio_compra) > 0
     ? ((Number(f.precio_venta) - Number(f.precio_compra)) / Number(f.precio_venta)) * 100 : null;
-  const opcion = (activo) => `flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition ${activo ? 'bg-white text-brand-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`;
+  const opcion = (activo) => `tap flex-1 justify-center rounded-md px-3 py-1.5 text-sm font-medium transition ${activo ? 'bg-white text-brand-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`;
 
   return (
     <Modal
@@ -127,7 +128,7 @@ function ProductoForm({ open, producto, categorias, proveedores, onCategoriaCrea
       <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2" noValidate>
         <div>
           <EtiquetaConAccion label="Categoría" required accion={!nuevaCat && 'Nueva'} onAccion={() => setNuevaCat(true)} />
-          <select className={`input ${errors.categoria_id ? 'input-error' : ''}`} value={f.categoria_id} onChange={set('categoria_id')}>
+          <select aria-label="Categoría" aria-invalid={errors.categoria_id ? true : undefined} className={`input ${errors.categoria_id ? 'input-error' : ''}`} value={f.categoria_id} onChange={set('categoria_id')}>
             <option value="">Seleccione…</option>
             {categorias.filter((c) => c.activo || c.id === Number(f.categoria_id)).map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
           </select>
@@ -140,7 +141,7 @@ function ProductoForm({ open, producto, categorias, proveedores, onCategoriaCrea
         </div>
 
         <div>
-          <span className="label">Código / SKU {!usaAuto && <span className="text-red-500">*</span>}</span>
+          <span className="label">Código / SKU {!usaAuto && <span className="text-red-600">*</span>}</span>
           {!editando && (
             <div className="mb-2 flex rounded-md bg-slate-100 p-1" role="radiogroup" aria-label="Tipo de código">
               <button type="button" role="radio" aria-checked={skuAuto} className={opcion(skuAuto)} onClick={() => setSkuAuto(true)}>Automático</button>
@@ -150,8 +151,8 @@ function ProductoForm({ open, producto, categorias, proveedores, onCategoriaCrea
           {usaAuto ? (
             <div className="flex h-[38px] items-center rounded-md border border-dashed border-slate-300 bg-slate-50 px-3 text-sm">
               {f.categoria_id
-                ? (skuSugerido ? <span>Se asignará <span className="code-tag">{skuSugerido}</span></span> : <span className="text-slate-400">Calculando…</span>)
-                : <span className="text-slate-400">Elija una categoría para ver el código</span>}
+                ? (skuSugerido ? <span>Se asignará <span className="code-tag">{skuSugerido}</span></span> : <span className="text-slate-500">Calculando…</span>)
+                : <span className="text-slate-500">Elija una categoría para ver el código</span>}
             </div>
           ) : (
             <input className={`input uppercase ${errors.sku ? 'input-error' : ''}`} value={f.sku} onChange={set('sku')} placeholder="Ej. ELE-CAB-12 o código del proveedor" />
@@ -168,7 +169,7 @@ function ProductoForm({ open, producto, categorias, proveedores, onCategoriaCrea
 
         <div>
           <EtiquetaConAccion label="Proveedor" accion={!nuevoProv && 'Nuevo'} onAccion={() => setNuevoProv(true)} />
-          <select className="input" value={f.proveedor_id} onChange={set('proveedor_id')}>
+          <select aria-label="Proveedor" className="input" value={f.proveedor_id} onChange={set('proveedor_id')}>
             <option value="">Sin proveedor</option>
             {proveedores.filter((p) => p.activo || p.id === Number(f.proveedor_id)).map((p) => <option key={p.id} value={p.id}>{p.razon_social}</option>)}
           </select>
@@ -209,7 +210,7 @@ function ProductoForm({ open, producto, categorias, proveedores, onCategoriaCrea
               <Field label="Cantidad existente" error={errors.stock_inicial}>
                 <div className="relative">
                   <input type="number" min="0" step="any" placeholder="0" className={`input pr-16 ${errors.stock_inicial ? 'input-error' : ''}`} value={f.stock_inicial} onChange={set('stock_inicial')} />
-                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">{f.unidad_medida}</span>
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500">{f.unidad_medida}</span>
                 </div>
               </Field>
               {almacenes?.length > 1 && (
@@ -278,17 +279,17 @@ export default function Productos() {
       <TableCard
         toolbar={<>
           <SearchInput value={q} onChange={setQ} placeholder="Buscar por SKU, nombre o descripción" className="lg:w-80" />
-          <select className="input lg:w-52" value={categoria} onChange={(e) => setCategoria(e.target.value)}>
+          <select aria-label="Filtrar por categoría" className="input lg:w-52" value={categoria} onChange={(e) => setCategoria(e.target.value)}>
             <option value="">Todas las categorías</option>
             {categorias?.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
           </select>
-          <select className="input lg:w-44" value={estadoStock} onChange={(e) => setEstadoStock(e.target.value)}>
+          <select aria-label="Filtrar por estado de stock" className="input lg:w-44" value={estadoStock} onChange={(e) => setEstadoStock(e.target.value)}>
             <option value="">Todo el stock</option>
             <option value="NORMAL">Stock normal</option>
             <option value="BAJO">Stock bajo</option>
             <option value="AGOTADO">Agotados</option>
           </select>
-          <select className="input lg:w-36" value={activo} onChange={(e) => setActivo(e.target.value)}>
+          <select aria-label="Mostrar productos activos o inactivos" className="input lg:w-36" value={activo} onChange={(e) => setActivo(e.target.value)}>
             <option value="true">Activos</option>
             <option value="false">Inactivos</option>
             <option value="">Todos</option>
@@ -318,7 +319,7 @@ export default function Productos() {
                   <td className={`num font-semibold ${p.estado_stock === 'AGOTADO' ? 'text-red-600' : p.estado_stock === 'BAJO' ? 'text-amber-700' : 'text-slate-900'}`}>
                     {fmtNum(p.stock_disponible)}
                     {(Number(p.stock_danado) + Number(p.stock_defectuoso) > 0) && (
-                      <span className="block text-[11px] font-normal text-slate-500">+{fmtNum(Number(p.stock_danado) + Number(p.stock_defectuoso))} no aptas</span>
+                      <span className="block text-xs font-normal text-slate-500">+{fmtNum(Number(p.stock_danado) + Number(p.stock_defectuoso))} no aptas</span>
                     )}
                   </td>
                   <td className="num text-slate-500">{fmtNum(p.stock_minimo)}</td>
