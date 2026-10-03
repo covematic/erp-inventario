@@ -10,8 +10,9 @@ import ProductSelect from '../components/ProductSelect';
 import { PageHeader, TableCard, SearchInput, LoadingBlock, ErrorBlock, EmptyState, StockBadge, Field, StatCard } from '../components/ui';
 import { fmtNum, fmtMoney, hoy, TIPO_AJUSTE } from '../utils/format';
 import { enfocarPrimerError } from '../utils/foco';
+import { CampoLista, SinOpciones } from '../components/ListaObligatoria';
 
-function AjusteForm({ open, onClose, onSaved, almacenes, productos }) {
+function AjusteForm({ open, onClose, onSaved, almacenes, productos, onAlmacenCreado }) {
   const toast = useToast();
   const [f, setF] = useState({ fecha: hoy(), producto_id: null, almacen_id: '', tipo: 'INCREMENTO', cantidad: '', motivo: '' });
   const [errors, setErrors] = useState({});
@@ -24,6 +25,7 @@ function AjusteForm({ open, onClose, onSaved, almacenes, productos }) {
   async function submit() {
     const e = {};
     if (!f.producto_id) e.producto_id = 'Seleccione el producto';
+    if (!almacenId) e.almacen_id = 'Seleccione el almacén';
     if (!(Number(f.cantidad) > 0)) e.cantidad = 'La cantidad debe ser mayor a 0';
     else if (f.tipo !== 'INCREMENTO' && actual && Number(f.cantidad) > Number(actual[campo])) e.cantidad = `No puede superar el stock ${campo} (${fmtNum(actual[campo])})`;
     if (!f.motivo.trim()) e.motivo = 'El motivo es obligatorio';
@@ -42,14 +44,18 @@ function AjusteForm({ open, onClose, onSaved, almacenes, productos }) {
     <Modal open={open} onClose={onClose} title="Ajuste de inventario" subtitle="Corrección aprobada por supervisor; queda registrada en el Kardex"
       footer={<><button className="btn-secondary" onClick={onClose}>Cancelar</button><button className="btn-primary" onClick={submit} disabled={saving}>{saving ? 'Guardando…' : 'Registrar ajuste'}</button></>}>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Producto" required error={errors.producto_id} className="sm:col-span-2">
-          <ProductSelect products={productos} value={f.producto_id} onChange={(p) => setF({ ...f, producto_id: p.id })} error={errors.producto_id} />
-        </Field>
-        <Field label="Almacén" required>
+        {productos?.length === 0 ? (
+          <div className="sm:col-span-2"><span className="label">Producto <span className="text-red-600" aria-hidden="true">*</span></span><SinOpciones tipo="producto" /></div>
+        ) : (
+          <Field label="Producto" required error={errors.producto_id} className="sm:col-span-2">
+            <ProductSelect products={productos} value={f.producto_id} onChange={(p) => setF({ ...f, producto_id: p.id })} error={errors.producto_id} />
+          </Field>
+        )}
+        <CampoLista tipo="almacen" opciones={almacenes} label="Almacén" error={errors.almacen_id} onCreado={onAlmacenCreado}>
           <select className="input" value={almacenId || ''} onChange={(e) => setF({ ...f, almacen_id: e.target.value })}>
             {almacenes?.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
           </select>
-        </Field>
+        </CampoLista>
         <Field label="Fecha" required><input type="date" className="input" value={f.fecha} max={hoy()} onChange={(e) => setF({ ...f, fecha: e.target.value })} /></Field>
         <Field label="Tipo de ajuste" required>
           <select className="input" value={f.tipo} onChange={(e) => setF({ ...f, tipo: e.target.value })}>
@@ -77,7 +83,7 @@ export default function Inventario() {
   const dq = useDebounce(q);
   const { data, loading, error, reload } = useFetch('/inventario/stock', { q: dq, categoria_id: categoria, almacen_id: almacen, estado });
   const { data: categorias } = useFetch('/categorias');
-  const { data: almacenes } = useFetch('/almacenes', { activo: 'true' });
+  const { data: almacenes, setData: setAlmacenes } = useFetch('/almacenes', { activo: 'true' });
   const { data: productos } = useFetch('/productos', { activo: 'true', limit: 1000 });
 
   const tot = useMemo(() => (data || []).reduce((a, r) => ({
@@ -139,7 +145,8 @@ export default function Inventario() {
           </table>
         )}
       </TableCard>
-      <AjusteForm open={ajuste} onClose={() => setAjuste(false)} onSaved={() => { setAjuste(false); reload(); }} almacenes={almacenes} productos={productos?.data || []} />
+      <AjusteForm open={ajuste} onClose={() => setAjuste(false)} onSaved={() => { setAjuste(false); reload(); }} almacenes={almacenes} productos={productos?.data}
+        onAlmacenCreado={(a) => setAlmacenes((l) => [...(l || []), a])} />
     </>
   );
 }

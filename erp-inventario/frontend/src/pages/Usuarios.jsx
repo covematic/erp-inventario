@@ -5,6 +5,7 @@ import useFetch from '../hooks/useFetch';
 import { useToast } from '../context/ToastContext';
 import Modal from '../components/Modal';
 import { PageHeader, TableCard, LoadingBlock, ErrorBlock, Badge, Field } from '../components/ui';
+import { CampoLista } from '../components/ListaObligatoria';
 import { ROLES, fmtDate } from '../utils/format';
 import { enfocarPrimerError } from '../utils/foco';
 
@@ -44,12 +45,12 @@ function UsuarioForm({ open, usuario, roles, onClose, onSaved }) {
         <Field label={usuario ? 'Nueva contraseña' : 'Contraseña'} required={!usuario} error={errors.password} hint={usuario ? 'Déjela vacía para mantener la actual' : null}>
           <input type="password" className="input" value={f.password || ''} onChange={(e) => setF({ ...f, password: e.target.value })} autoComplete="new-password" />
         </Field>
-        <Field label="Rol" required error={errors.rol_id}>
+        <CampoLista tipo="rol" opciones={roles} label="Rol" error={errors.rol_id}>
           <select className="input" value={f.rol_id || ''} onChange={(e) => setF({ ...f, rol_id: e.target.value })}>
             <option value="">Seleccione…</option>
             {roles?.map((r) => <option key={r.id} value={r.id}>{ROLES[r.nombre]} — {r.descripcion}</option>)}
           </select>
-        </Field>
+        </CampoLista>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4 rounded" checked={!!f.activo} onChange={(e) => setF({ ...f, activo: e.target.checked })} /> Usuario activo</label>
       </div>
     </Modal>

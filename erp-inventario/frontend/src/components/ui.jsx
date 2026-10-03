@@ -136,10 +136,27 @@ function vincularControl(nodo, extra, nivel = 0) {
   return [hecho ? cloneElement(nodo, {}, hijos) : nodo, hecho];
 }
 
+/** Busca un <select> dentro del campo y cuenta sus opciones elegibles (las que no son «Seleccione…»). */
+function opcionesElegibles(nodo, nivel = 0) {
+  if (!isValidElement(nodo) || nivel > 3) return null;
+  if (nodo.type === 'select') {
+    return Children.toArray(nodo.props.children).filter((o) => isValidElement(o) && o.type === 'option' && String(o.props.value ?? o.props.children) !== '').length;
+  }
+  if (typeof nodo.type !== 'string') return null;
+  for (const h of Children.toArray(nodo.props.children)) {
+    const n = opcionesElegibles(h, nivel + 1);
+    if (n !== null) return n;
+  }
+  return null;
+}
+
 /** Campo de formulario: la etiqueta queda vinculada al control y el error se anuncia y se conecta con él. */
-export function Field({ label, error, required, hint, children, className = '' }) {
+export function Field({ label, error, required, hint, children, className = '', cargando = false }) {
   const id = useId();
   const msgId = `${id}-msg`;
+  // Red de seguridad: una lista obligatoria sin opciones no se puede completar; se avisa en lugar de dejarla vacía.
+  // Para listas que vienen de la base de datos use <CampoLista>, que además permite crear la opción ahí mismo.
+  const listaVacia = required && !cargando && opcionesElegibles(children) === 0;
   const [control, vinculado] = vincularControl(children, {
     id,
     'aria-invalid': error ? true : undefined,
@@ -154,6 +171,11 @@ export function Field({ label, error, required, hint, children, className = '' }
         </label>
       )}
       {control}
+      {listaVacia && (
+        <p className="mt-1 rounded-md border border-amber-300 bg-amber-50 px-2 py-1.5 text-xs text-amber-950" role="status">
+          Todavía no hay opciones para «{label}». Regístrelas primero o pida ayuda a un administrador.
+        </p>
+      )}
       {error
         ? <p id={msgId} role="alert" className="mt-1 text-xs font-medium text-red-700">{error}</p>
         : hint ? <p id={msgId} className="mt-1 text-xs text-slate-500">{hint}</p> : null}

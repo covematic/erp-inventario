@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Modal from '../components/Modal';
 import { PageHeader, TableCard, SearchInput, LoadingBlock, ErrorBlock, EmptyState, Pagination, Field, DetailItem, EstadoProductoBadge } from '../components/ui';
+import { CampoLista } from '../components/ListaObligatoria';
 import { fmtNum, fmtDate, hoy } from '../utils/format';
 import { enfocarPrimerError } from '../utils/foco';
 
@@ -88,14 +89,14 @@ function DevolucionForm({ open, salidaInicial, onClose, onSaved }) {
       </>}
     >
       <div className="space-y-4">
-        <Field label="Guía de salida" required error={errors.salida_id} hint="Solo se listan guías despachadas con productos pendientes de devolver">
+        <CampoLista tipo="guiaDevolvible" opciones={guias?.data} label="Guía de salida" error={errors.salida_id} hint="Solo se listan guías despachadas con productos pendientes de devolver">
           <select className={`input ${errors.salida_id ? 'input-error' : ''}`} value={salidaId} onChange={(e) => setSalidaId(e.target.value)}>
             <option value="">Seleccione…</option>
             {guias?.data.map((g) => (
               <option key={g.id} value={g.id}>{g.numero} · {fmtDate(g.fecha)} · {g.destino_nombre}</option>
             ))}
           </select>
-        </Field>
+        </CampoLista>
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Fecha" required error={errors.fecha}>
             <input type="date" className="input" value={f.fecha} max={hoy()} onChange={(e) => setF({ ...f, fecha: e.target.value })} />

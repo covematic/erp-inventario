@@ -10,6 +10,7 @@ import { PageHeader, TableCard, SearchInput, LoadingBlock, ErrorBlock, EmptyStat
 import { fmtNum, fmtMoney, hoy } from '../utils/format';
 import { enfocarPrimerError } from '../utils/foco';
 import { CreacionRapida, EtiquetaConAccion, CAMPOS_CATEGORIA, CAMPOS_PROVEEDOR } from '../components/CreacionRapida';
+import { SinOpciones } from '../components/ListaObligatoria';
 
 const VACIO = {
   sku: '', nombre: '', descripcion: '', categoria_id: '', proveedor_id: '', unidad_medida: 'UND',
@@ -47,7 +48,8 @@ function ProductoForm({ open, producto, categorias, proveedores, onCategoriaCrea
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const editando = !!producto;
-  const { data: almacenes } = useFetch('/almacenes', { activo: 'true' }, { enabled: open && !producto });
+  const { data: almacenes, setData: setAlmacenes } = useFetch('/almacenes', { activo: 'true' }, { enabled: open && !producto });
+  const onAlmacenCreado = (a) => { setAlmacenes((l) => [...(l || []), a]); setF((x) => ({ ...x, almacen_inicial_id: String(a.id) })); };
 
   useEffect(() => {
     if (!open) return;
@@ -77,6 +79,7 @@ function ProductoForm({ open, producto, categorias, proveedores, onCategoriaCrea
   async function submit(e) {
     e?.preventDefault();
     const errs = validar(f, usaAuto);
+    if (!editando && Number(f.stock_inicial) > 0 && almacenes?.length === 0) errs.stock_inicial = 'Cree un almacén para guardar el stock inicial, o deje la cantidad vacía';
     setErrors(errs);
     if (Object.keys(errs).length) { enfocarPrimerError(); return; }
     setSaving(true);
@@ -128,10 +131,14 @@ function ProductoForm({ open, producto, categorias, proveedores, onCategoriaCrea
       <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2" noValidate>
         <div>
           <EtiquetaConAccion label="Categoría" required accion={!nuevaCat && 'Nueva'} onAccion={() => setNuevaCat(true)} />
-          <select aria-label="Categoría" aria-invalid={errors.categoria_id ? true : undefined} className={`input ${errors.categoria_id ? 'input-error' : ''}`} value={f.categoria_id} onChange={set('categoria_id')}>
+          {categorias.length === 0 && !nuevaCat ? (
+            <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950" role="status">
+              Aún no hay categorías. Pulse <b>«+ Nueva»</b> para crear la primera; se elegirá automáticamente.
+            </div>
+          ) : <select aria-label="Categoría" aria-invalid={errors.categoria_id ? true : undefined} className={`input ${errors.categoria_id ? 'input-error' : ''}`} value={f.categoria_id} onChange={set('categoria_id')}>
             <option value="">Seleccione…</option>
             {categorias.filter((c) => c.activo || c.id === Number(f.categoria_id)).map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-          </select>
+          </select>}
           {errors.categoria_id && <p className="mt-1 text-xs text-red-600">{errors.categoria_id}</p>}
           {nuevaCat && (
             <CreacionRapida titulo="Categoría" endpoint="/categorias" campos={CAMPOS_CATEGORIA}
@@ -221,6 +228,9 @@ function ProductoForm({ open, producto, categorias, proveedores, onCategoriaCrea
                 </Field>
               )}
             </div>
+            {Number(f.stock_inicial) > 0 && almacenes?.length === 0 && (
+              <div className="mt-3"><SinOpciones tipo="almacen" mensaje="Para guardar el stock inicial necesita al menos un almacén." onCreado={onAlmacenCreado} /></div>
+            )}
             {Number(f.stock_inicial) > 0 && Number(f.precio_compra) > 0 && (
               <p className="mt-2 text-xs text-emerald-900">Valor del stock inicial: <b>{fmtMoney(Number(f.stock_inicial) * Number(f.precio_compra))}</b></p>
             )}

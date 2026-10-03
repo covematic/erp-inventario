@@ -6,10 +6,11 @@ import { fmtNum } from '../utils/format';
  * Selector de producto con búsqueda por SKU o nombre.
  * products: [{ id, sku, nombre, unidad_medida, stock_disponible }]
  */
-export default function ProductSelect({ products, value, onChange, showStock, excludeIds = [], error, disabled }) {
+export default function ProductSelect({ products: lista, value, onChange, showStock, excludeIds = [], error, disabled }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
   const ref = useRef(null);
+  const products = useMemo(() => lista || [], [lista]);
   const selected = products.find((p) => p.id === value);
 
   useEffect(() => {
@@ -45,7 +46,7 @@ export default function ProductSelect({ products, value, onChange, showStock, ex
             <input autoFocus className="input" placeholder="Buscar por SKU o nombre…" value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
           <ul className="max-h-64 overflow-y-auto pb-1">
-            {filtered.length === 0 && <li className="px-3 py-3 text-sm text-slate-500">Sin coincidencias</li>}
+            {filtered.length === 0 && <li className="px-3 py-3 text-sm text-slate-500">{products.length === 0 ? (lista ? 'Aún no hay productos registrados' : 'Cargando productos…') : 'Sin coincidencias'}</li>}
             {filtered.map((p) => {
               const agotado = showStock && Number(p.stock_disponible) <= 0;
               return (

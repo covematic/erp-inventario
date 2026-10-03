@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Trash2, ArrowLeft, Truck, Clock, AlertTriangle, FolderKanban, Building2 } from 'lucide-react';
 import api, { errorMessage, fieldErrors } from '../api/client';
 import useFetch from '../hooks/useFetch';
@@ -8,6 +8,7 @@ import ProductSelect from '../components/ProductSelect';
 import CantidadInput from '../components/CantidadInput';
 import { ConfirmDialog } from '../components/Modal';
 import { PageHeader, Field, LoadingBlock } from '../components/ui';
+import { CampoLista, SinOpciones } from '../components/ListaObligatoria';
 import { fmtNum, hoy, MOTIVOS_SALIDA } from '../utils/format';
 import { enfocarPrimerError } from '../utils/foco';
 
@@ -17,9 +18,9 @@ const nuevaLinea = () => ({ key: lineId++, producto_id: null, cantidad: '' });
 export default function SalidaForm() {
   const navigate = useNavigate();
   const toast = useToast();
-  const { data: almacenes } = useFetch('/almacenes', { activo: 'true' });
-  const { data: proyectos } = useFetch('/proyectos', { estado: 'ACTIVO' });
-  const { data: areas } = useFetch('/areas', { activo: 'true' });
+  const { data: almacenes, setData: setAlmacenes } = useFetch('/almacenes', { activo: 'true' });
+  const { data: proyectos, setData: setProyectos } = useFetch('/proyectos', { estado: 'ACTIVO' });
+  const { data: areas, setData: setAreas } = useFetch('/areas', { activo: 'true' });
   const { data: productos } = useFetch('/productos', { activo: 'true', limit: 1000 });
 
   const [f, setF] = useState({
@@ -157,19 +158,21 @@ export default function SalidaForm() {
             </div>
           </div>
           {f.tipo_destino === 'PROYECTO' ? (
-            <Field label="Proyecto" required error={errors.proyecto_id}>
+            <CampoLista tipo="proyecto" opciones={proyectos} label="Proyecto" error={errors.proyecto_id}
+              onCreado={(p) => { setProyectos((l) => [...(l || []), p]); setF((x) => ({ ...x, proyecto_id: String(p.id), responsable: x.responsable || p.responsable || '' })); }}>
               <select className={`input ${errors.proyecto_id ? 'input-error' : ''}`} value={f.proyecto_id} onChange={onProyecto}>
                 <option value="">Seleccione…</option>
                 {proyectos?.map((p) => <option key={p.id} value={p.id}>{p.codigo} · {p.nombre}</option>)}
               </select>
-            </Field>
+            </CampoLista>
           ) : (
-            <Field label="Área solicitante" required error={errors.area_id}>
+            <CampoLista tipo="area" opciones={areas} label="Área solicitante" error={errors.area_id}
+              onCreado={(a) => { setAreas((l) => [...(l || []), a]); setF((x) => ({ ...x, area_id: String(a.id) })); }}>
               <select className={`input ${errors.area_id ? 'input-error' : ''}`} value={f.area_id} onChange={set('area_id')}>
                 <option value="">Seleccione…</option>
                 {areas?.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
               </select>
-            </Field>
+            </CampoLista>
           )}
           <div className="grid grid-cols-2 gap-3">
             <Field label="Fecha" required error={errors.fecha}>
@@ -179,12 +182,13 @@ export default function SalidaForm() {
               <input className="input" value={f.numero_guia} onChange={set('numero_guia')} placeholder="GR-001" />
             </Field>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Almacén" required error={errors.almacen_id}>
+          <div className={`grid gap-3 ${almacenes.length ? 'grid-cols-2' : ''}`}>
+            <CampoLista tipo="almacen" opciones={almacenes} label="Almacén" error={errors.almacen_id}
+              onCreado={(a) => { setAlmacenes((l) => [...(l || []), a]); setF((x) => ({ ...x, almacen_id: String(a.id) })); }}>
               <select className="input" value={f.almacen_id} onChange={(e) => { set('almacen_id')(e); setFaltantes({}); }}>
                 {almacenes.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
               </select>
-            </Field>
+            </CampoLista>
             <Field label="Motivo" required>
               <select className="input" value={f.motivo} onChange={set('motivo')}>
                 {Object.entries(MOTIVOS_SALIDA).filter(([k]) => f.tipo_destino === 'PROYECTO' || k !== 'PROYECTO').map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -219,7 +223,16 @@ export default function SalidaForm() {
             <button className="btn-secondary btn-sm shrink-0" onClick={() => setLineas((l) => [...l, nuevaLinea()])}><Plus aria-hidden="true" className="h-4 w-4" /> Agregar producto</button>
           </div>
           {errors.items && <p className="mx-5 mt-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{errors.items}</p>}
-          <div className="flex-1 space-y-3 p-5">
+          {listaProductos.length === 0 ? (
+            <div className="p-5"><SinOpciones tipo="producto" mensaje="Aún no hay productos registrados, por eso no hay nada que despachar." /></div>
+          ) : stockAlm && !stockAlm.some((s) => Number(s.disponible) > 0) && (
+            <div className="mx-5 mt-3 flex flex-wrap items-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950" role="status">
+              <AlertTriangle aria-hidden="true" className="h-4 w-4 shrink-0 text-amber-700" />
+              <span className="flex-1">Este almacén no tiene stock disponible. Registre una entrada o elija otro almacén antes de despachar.</span>
+              <Link to="/entradas" state={{ nuevo: true }} className="btn-secondary btn-sm">Registrar entrada</Link>
+            </div>
+          )}
+          <div className={`flex-1 space-y-3 p-5 ${listaProductos.length === 0 ? 'hidden' : ''}`}>
             {lineas.map((l, i) => {
               const disp = l.producto_id ? (dispPorProducto[l.producto_id] ?? 0) : null;
               const prod = listaProductos.find((p) => p.id === l.producto_id);

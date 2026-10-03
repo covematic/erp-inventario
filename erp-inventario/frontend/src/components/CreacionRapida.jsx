@@ -8,7 +8,7 @@ import { useToast } from '../context/ToastContext';
  * Mini formulario para crear una categoría o un proveedor sin salir del producto.
  * campos: [{ key, label, placeholder, validar(v) → mensaje|null }]
  */
-export function CreacionRapida({ titulo, campos, endpoint, onCreado, onCancelar }) {
+export function CreacionRapida({ titulo, encabezado, aviso, campos, endpoint, fijos = {}, onCreado, onCancelar }) {
   const toast = useToast();
   const [v, setV] = useState(() => Object.fromEntries(campos.map((c) => [c.key, ''])));
   const [errors, setErrors] = useState({});
@@ -24,9 +24,9 @@ export function CreacionRapida({ titulo, campos, endpoint, onCreado, onCancelar 
     if (Object.keys(e).length) { enfocarPrimerError(); return; }
     setSaving(true);
     try {
-      const body = Object.fromEntries(campos.map((c) => [c.key, v[c.key].trim()]));
+      const body = { ...fijos, ...Object.fromEntries(campos.map((c) => [c.key, v[c.key].trim()])) };
       const { data } = await api.post(endpoint, body);
-      toast.success(`${titulo} creado(a)`);
+      toast.success(aviso || `${titulo} creado(a)`);
       onCreado(data);
     } catch (err) {
       setErrors(fieldErrors(err));
@@ -38,7 +38,7 @@ export function CreacionRapida({ titulo, campos, endpoint, onCreado, onCancelar 
 
   return (
     <div className="mt-2 space-y-2 rounded-md border border-brand-200 bg-brand-50/50 p-3">
-      <p className="text-sm font-semibold text-brand-700">Nueva {titulo.toLowerCase()}</p>
+      <p className="text-sm font-semibold text-brand-700">{encabezado || `Nueva ${titulo.toLowerCase()}`}</p>
       {campos.map((c, i) => (
         <div key={c.key}>
           <input
@@ -51,7 +51,7 @@ export function CreacionRapida({ titulo, campos, endpoint, onCreado, onCancelar 
             onChange={(e) => setV({ ...v, [c.key]: e.target.value })}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); guardar(); } }}
           />
-          {errors[c.key] && <p className="mt-1 text-xs text-red-600">{errors[c.key]}</p>}
+          {errors[c.key] && <p role="alert" className="mt-1 text-xs text-red-700">{errors[c.key]}</p>}
         </div>
       ))}
       <div className="flex justify-end gap-2">

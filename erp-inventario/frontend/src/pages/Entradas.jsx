@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Modal, { ConfirmDialog } from '../components/Modal';
 import ProductSelect from '../components/ProductSelect';
+import { CampoLista, SinOpciones } from '../components/ListaObligatoria';
 import { PageHeader, TableCard, SearchInput, LoadingBlock, ErrorBlock, EmptyState, Pagination, EstadoBadge, Field, DetailItem } from '../components/ui';
 import { fmtNum, fmtMoney, fmtDate, fmtDateTime, hoy } from '../utils/format';
 import { enfocarPrimerError } from '../utils/foco';
@@ -19,7 +20,7 @@ function EntradaForm({ open, onClose, onSaved }) {
   const toast = useToast();
   const { data: proveedores, setData: setProveedores } = useFetch('/proveedores', { activo: 'true' }, { enabled: open });
   const [nuevoProv, setNuevoProv] = useState(false);
-  const { data: almacenes } = useFetch('/almacenes', { activo: 'true' }, { enabled: open });
+  const { data: almacenes, setData: setAlmacenes } = useFetch('/almacenes', { activo: 'true' }, { enabled: open });
   const { data: productos } = useFetch('/productos', { activo: 'true', limit: 1000 }, { enabled: open });
   const [f, setF] = useState({});
   const [lineas, setLineas] = useState([]);
@@ -41,6 +42,7 @@ function EntradaForm({ open, onClose, onSaved }) {
   const setL = (key, c) => setLineas((ls) => ls.map((l) => (l.key === key ? { ...l, ...c } : l)));
   const total = lineas.reduce((a, l) => a + (Number(l.cantidad) || 0) * (Number(l.costo_unitario) || 0), 0);
   const lista = productos?.data || [];
+  const sinProductos = productos && lista.length === 0;
 
   async function submit() {
     const e = {};
@@ -96,11 +98,12 @@ function EntradaForm({ open, onClose, onSaved }) {
               }} />
           )}
         </div>
-        <Field label="Almacén" required error={errors.almacen_id}>
+        <CampoLista tipo="almacen" opciones={almacenes} label="Almacén" error={errors.almacen_id} className={almacenes?.length === 0 ? 'sm:col-span-4' : ''}
+          onCreado={(a) => { setAlmacenes((l) => [...(l || []), a]); setF((x) => ({ ...x, almacen_id: String(a.id) })); }}>
           <select className="input" value={f.almacen_id || ''} onChange={set('almacen_id')}>
             {almacenes?.map((a) => <option key={a.id} value={a.id}>{a.nombre}</option>)}
           </select>
-        </Field>
+        </CampoLista>
         <Field label="Documento" hint="Factura, guía de remisión o referencia">
           <input className="input" value={f.documento_ref || ''} onChange={set('documento_ref')} placeholder="F001-000123" />
         </Field>
@@ -113,7 +116,8 @@ function EntradaForm({ open, onClose, onSaved }) {
           <button className="btn-secondary btn-sm" onClick={() => setLineas((l) => [...l, linea()])}><Plus className="h-4 w-4" /> Agregar</button>
         </div>
         {errors.items && <p className="px-3 pt-2 text-sm text-red-600">{errors.items}</p>}
-        <div className="space-y-2 p-3">
+        {sinProductos && <div className="p-3"><SinOpciones tipo="producto" mensaje="Aún no hay productos registrados. Primero registre el producto; si ya tiene unidades, indíquelas en «Stock inicial»." /></div>}
+        <div className={`space-y-2 p-3 ${sinProductos ? 'hidden' : ''}`}>
           <div className="hidden grid-cols-12 gap-2 px-1 font-display text-[13px] font-semibold text-slate-500 sm:grid">
             <span className="col-span-6">Producto</span><span className="col-span-2 text-right">Cantidad</span><span className="col-span-2 text-right">Costo unit. (S/)</span><span className="col-span-2 text-right">Costo total</span>
           </div>

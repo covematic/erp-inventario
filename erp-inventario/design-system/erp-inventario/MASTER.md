@@ -52,3 +52,12 @@ Gráficos (validados para daltonismo): entradas `#2E63B8`, salidas `#E8741C`, de
 3. **Filtros progresivos:** en el celular solo se ve la búsqueda; el resto va tras "Filtros (n)" con "Limpiar filtros". Pasar `onLimpiar` a `TableCard`.
 4. **Esperas explicadas:** `LoadingBlock` y el login avisan tras 4 s que el servidor se está activando.
 5. **Menos tecleo:** cantidades con `CantidadInput` (− / +), y se recuerda el último almacén usado.
+
+## Listas obligatorias (regla 11)
+
+Nunca debe existir una lista obligatoria imposible de completar.
+
+- Toda `<select>` obligatoria cuyas opciones vienen de la base de datos usa `<CampoLista tipo="…" opciones={datos}>` (`components/ListaObligatoria.jsx`). Si la lista llega vacía, muestra un aviso con la solución: crear la opción ahí mismo (si el rol tiene permiso), ir a la pantalla correcta, o a quién pedírselo.
+- Para un tipo nuevo de lista, agregar su entrada en `LISTAS` (quién crea, campos mínimos, mensaje).
+- Red de seguridad: `<Field required>` con una `<select>` sin opciones elegibles muestra un aviso automáticamente.
+- Listas de productos vacías: mostrar `SinOpciones tipo="producto"` en lugar de las líneas.
